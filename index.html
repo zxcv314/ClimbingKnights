@@ -112,7 +112,7 @@
 
     <div id="login-screen" class="ui-layer">
         <h1 style="font-family: 'Black Ops One'; color: var(--primary); font-size: 40px; margin-bottom: 5px;">CLIMBING KNIGHTS</h1>
-        <p style="margin-bottom: 20px; color: #aaa;">마왕성 탑을 올라라</p>
+        <p style="margin-bottom: 20px; color: #aaa;">원터치 등반 게임</p>
         <div class="box">
             <input type="text" id="username" placeholder="유저명">
             <input type="password" id="password" placeholder="비밀번호">
@@ -123,14 +123,14 @@
     <div id="main-menu" class="ui-layer hidden">
         <h2 id="welcome-msg" style="color: var(--primary);">님, 안녕하세요!</h2>
         <p>최고 기록: <span id="best-dist">0</span>m</p>
-        <button style="width: 220px;" onclick="game.start()">스토리 모드 시작</button>
+        <button style="width: 220px;" onclick="game.start()">시작</button>
         <button style="width: 220px; background: #555; color: white;" onclick="game.logout()">로그아웃</button>
     </div>
 
     <div id="game-over" class="ui-layer hidden">
-        <h1 id="over-title" style="color: var(--danger); font-size: 40px;">원정 실패</h1>
+        <h1 id="over-title" style="color: var(--danger); font-size: 40px;">Game Over</h1>
         <p id="over-stats"></p>
-        <button style="width: 200px;" onclick="game.start()">재도전</button>
+        <button style="width: 200px;" onclick="game.start()">Retry</button>
         <button style="width: 200px; background: #555; color: white;" onclick="game.showMenu()">메뉴로</button>
     </div>
 
@@ -293,7 +293,7 @@ class Game {
         let data = localStorage.getItem(`ck_user_${name}`);
         if(data) {
             data = JSON.parse(data);
-            if(data.pass !== pass) return alert("비밀번호 틀림!");
+            if(data.pass !== pass) return alert("비밀번호가 틀렸습니다.");
             this.user = data;
         } else {
             this.user = { name, pass, best: 0 };
@@ -317,7 +317,7 @@ class Game {
         document.getElementById('login-screen').className = 'ui-layer hidden';
         document.getElementById('game-over').className = 'ui-layer hidden';
         document.getElementById('main-menu').className = 'ui-layer';
-        document.getElementById('welcome-msg').innerText = `${this.user.name} 기사, 준비되었나?`;
+        document.getElementById('welcome-msg').innerText = `${this.user.name} 님, 안녕하세요!`;
         document.getElementById('best-dist').innerText = this.user.best;
     }
 
