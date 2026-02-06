@@ -6,934 +6,985 @@
     <title>Climbing Knights</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Noto+Sans+KR:wght@400;700&display=swap');
-
-        :root {
-            --primary: #FFD700;
-            --danger: #FF4444;
-            --bg: #1a1a1a;
-            --ui-bg: rgba(0, 0, 0, 0.85);
+        :root { 
+            --primary: #FFD700; 
+            --danger: #FF4444; 
+            --ui-bg: rgba(0, 0, 0, 0.9); 
         }
-
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Noto Sans KR', sans-serif;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            touch-action: none; /* 모바일 터치 확대 방지 */
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: #000; 
+            font-family: 'Noto Sans KR', sans-serif; 
+            color: white; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            touch-action: none; 
         }
-
-        #game-container {
-            position: relative;
-            width: 100%;
-            max-width: 480px;
-            height: 100%;
-            max-height: 854px;
-            background: #222;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        #game-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 480px; 
+            height: 100%; 
+            background: #222; 
+            overflow: hidden; 
         }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
+        canvas { 
+            display: block; 
+            width: 100%; 
+            height: 100%; 
         }
-
-        /* UI Overlay Layer */
-        .ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
+        .ui-layer { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            background: var(--ui-bg); 
+            z-index: 10; 
         }
-
-        .ui-element {
-            pointer-events: auto;
+        .hidden { 
+            display: none !important; 
         }
-
-        /* Screens */
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--ui-bg);
-            display: none; /* JS로 제어 */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-            backdrop-filter: blur(5px);
+        .box { 
+            background: #333; 
+            padding: 30px; 
+            border-radius: 15px; 
+            border: 2px solid var(--primary); 
+            text-align: center; 
+            width: 80%; 
+            max-width: 400px;
         }
-
-        .screen.active {
-            display: flex;
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+            border: none; 
+            font-size: 16px; 
+            box-sizing: border-box; 
         }
-
-        h1 {
-            font-family: 'Black Ops One', cursive;
-            font-size: 48px;
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            margin-top: 15px; 
+            border: none; 
+            border-radius: 5px; 
+            background: var(--primary); 
+            color: black; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 18px; 
+        }
+        button:active {
+            opacity: 0.8;
+        }
+        #hud { 
+            position: absolute; 
+            top: 20px; 
+            left: 20px; 
+            z-index: 5; 
+            font-family: 'Black Ops One', cursive; 
+            font-size: 24px; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8); 
+            pointer-events: none; 
+        }
+        #zone-txt {
+            font-size: 14px;
             color: var(--primary);
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-            margin-bottom: 10px;
-            text-align: center;
-            line-height: 1;
+            margin-top: 5px;
         }
-        
-        h2 { margin-top: 0; color: #ccc; font-size: 18px; font-weight: normal; }
-
-        .btn {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            border: none;
-            padding: 15px 40px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #000;
-            border-radius: 50px;
-            cursor: pointer;
-            margin: 10px;
-            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
-            transition: transform 0.1s, filter 0.2s;
-            text-transform: uppercase;
-            font-family: 'Black Ops One', cursive;
-        }
-
-        .btn:active { transform: scale(0.95); }
-        .btn-secondary { background: #444; color: white; box-shadow: none; font-family: 'Noto Sans KR'; font-size: 16px;}
-
-        input {
-            padding: 12px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: 1px solid #555;
-            background: #333;
-            color: white;
-            margin: 10px;
-            width: 200px;
-            text-align: center;
-        }
-
-        /* HUD */
-        #hud {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px;
-            box-sizing: border-box;
-            display: flex;
-            justify-content: space-between;
-            pointer-events: none;
-            z-index: 5;
-            font-family: 'Black Ops One', cursive;
-            text-shadow: 1px 1px 2px black;
-        }
-        
-        .hud-item { font-size: 24px; color: white; }
-        .hud-gold { color: var(--primary); }
-        .zone-tag {
-            position: absolute;
-            top: 60px;
-            width: 100%;
-            text-align: center;
-            font-size: 32px;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 1s;
-            text-shadow: 0 0 10px black;
-            pointer-events: none;
-        }
-
-        /* Shop Grid */
-        .shop-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            max-height: 60vh;
-            overflow-y: auto;
-            padding: 10px;
-            width: 90%;
-        }
-
-        .skin-card {
-            background: #333;
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-            border: 2px solid transparent;
-            cursor: pointer;
-        }
-
-        .skin-card.selected { border-color: var(--primary); background: #444; }
-        .skin-card.locked { opacity: 0.7; }
-        .skin-icon { font-size: 32px; margin-bottom: 5px; }
-        .skin-name { font-weight: bold; font-size: 14px; }
-        .skin-price { color: var(--primary); font-size: 12px; }
-        .skin-desc { font-size: 10px; color: #aaa; margin-top: 5px; }
-
     </style>
 </head>
 <body>
 
 <div id="game-container">
+    <div id="hud" class="hidden">
+        <div id="dist-txt">0m</div>
+        <div id="zone-txt">BASIC ZONE</div>
+    </div>
+
+    <div id="login-screen" class="ui-layer">
+        <h1 style="font-family: 'Black Ops One'; color: var(--primary); font-size: 40px; margin-bottom: 5px;">CLIMBING KNIGHTS</h1>
+        <p style="margin-bottom: 20px; color: #aaa;">마왕성 탑을 올라라</p>
+        <div class="box">
+            <input type="text" id="username" placeholder="유저명">
+            <input type="password" id="password" placeholder="비밀번호">
+            <button onclick="game.login()">Login</button>
+        </div>
+    </div>
+
+    <div id="main-menu" class="ui-layer hidden">
+        <h2 id="welcome-msg" style="color: var(--primary);">님, 안녕하세요!</h2>
+        <p>최고 기록: <span id="best-dist">0</span>m</p>
+        <button style="width: 220px;" onclick="game.start()">스토리 모드 시작</button>
+        <button style="width: 220px; background: #555; color: white;" onclick="game.logout()">로그아웃</button>
+    </div>
+
+    <div id="game-over" class="ui-layer hidden">
+        <h1 id="over-title" style="color: var(--danger); font-size: 40px;">원정 실패</h1>
+        <p id="over-stats"></p>
+        <button style="width: 200px;" onclick="game.start()">재도전</button>
+        <button style="width: 200px; background: #555; color: white;" onclick="game.showMenu()">메뉴로</button>
+    </div>
+
     <canvas id="gameCanvas"></canvas>
-
-    <!-- HUD -->
-    <div id="hud" style="display: none;">
-        <div class="hud-item hud-dist">0m</div>
-        <div class="hud-item hud-gold">0 G</div>
-    </div>
-    <div id="zoneTag" class="zone-tag">BASIC ZONE</div>
-
-    <!-- Login Screen -->
-    <div id="screen-login" class="screen active">
-        <h1>Climbing<br>Knights</h1>
-        <h2>Ascend the Demon King's Tower</h2>
-        <input type="text" id="username" placeholder="기사 이름 입력" maxlength="12">
-        <button class="btn" onclick="gameApp.login()">게임 시작</button>
-    </div>
-
-    <!-- Main Menu -->
-    <div id="screen-menu" class="screen">
-        <h1>MAIN MENU</h1>
-        <div style="margin-bottom: 20px; text-align: center;">
-            <p>환영합니다, <span id="menu-username" style="color:var(--primary)">User</span>님</p>
-            <p>최고 기록: <span id="menu-best">0m</span></p>
-            <p>보유 골드: <span id="menu-gold" style="color:var(--primary)">0 G</span></p>
-        </div>
-        <button class="btn" onclick="gameApp.startGame()">PLAY NOW</button>
-        <button class="btn btn-secondary" onclick="gameApp.openShop()">상점 (Shop)</button>
-        <button class="btn btn-secondary" style="font-size:12px; margin-top:20px;" onclick="gameApp.logout()">로그아웃</button>
-    </div>
-
-    <!-- Shop Screen -->
-    <div id="screen-shop" class="screen">
-        <h2>ARMORY</h2>
-        <div style="margin-bottom:10px;">골드: <span id="shop-gold" style="color:var(--primary)">0</span></div>
-        <div class="shop-grid" id="shop-list">
-            <!-- Skin Items generated by JS -->
-        </div>
-        <button class="btn btn-secondary" onclick="gameApp.showScreen('screen-menu')">뒤로가기</button>
-    </div>
-
-    <!-- Game Over Screen -->
-    <div id="screen-gameover" class="screen">
-        <h1 style="color: var(--danger)">GAME OVER</h1>
-        <div style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; width: 80%;">
-            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;"><span id="go-dist">0</span>m</p>
-            <p>획득 골드: <span id="go-gold" style="color:var(--primary)">+0</span></p>
-            <hr style="border-color:#555">
-            <p style="font-size: 14px; color:#aaa;">Best: <span id="go-best">0</span>m</p>
-        </div>
-        <button class="btn" onclick="gameApp.startGame()">다시 도전</button>
-        <button class="btn btn-secondary" onclick="gameApp.showScreen('screen-menu')">메인 메뉴</button>
-    </div>
 </div>
 
 <script>
 /**
- * CLIMBING KNIGHTS - Single File Implementation
- * 2026-02-01 Implementation based on user GDD
+ * Climbing Knights - Complete Implementation
+ * 기획서 기반 전체 구현
  */
 
-// --- Constants & Config ---
-const CONSTANTS = {
-    PHYSICS: {
-        JUMP_SPEED: 15,
-        GRAVITY: 0.35, // Adjusted for 60fps canvas feel
-        WALL_BOUNCE: 0.6,
-        FRICTION: 0.99
-    },
-    GAME: {
-        SCREEN_WIDTH: 480,
-        SCREEN_HEIGHT: 854,
-        HOLD_GRAB_DIST: 50, // Pixel distance to grab
-        ARROW_SPEED: 3 // Degrees per frame
-    },
-    ZONES: [
-        { start: 0, name: "BASIC ZONE", color: "#333", holdTypes: ['normal', 'breaking'] },
-        { start: 2000, name: "ROCK ZONE", color: "#4A3B32", holdTypes: ['normal', 'breaking', 'rock_bug'] },
-        { start: 4000, name: "SNOW ZONE", color: "#5D7687", holdTypes: ['normal', 'ice', 'snow_bug'] },
-        { start: 6000, name: "LAVA ZONE", color: "#4A1C1C", holdTypes: ['normal', 'lava', 'lava_bug'] },
-        { start: 8000, name: "CASTLE ZONE", color: "#1A0F2E", holdTypes: ['normal', 'magic', 'trap'] }
-    ]
+const CONFIG = {
+    WIDTH: 480, 
+    HEIGHT: 854,
+    GRAVITY: 0.35, 
+    JUMP_SPEED: 16,
+    ARROW_ANGLE_RANGE: 60, // ±60도 = 120도 범위
+    HOLD_GRAB_DISTANCE: 55,
+    HOLD_SPAWN_DISTANCE: 180,
 };
 
-// --- Skin Data ---
-const SKINS = {
-    knight: { name: "Knight", price: 0, desc: "균형잡힌 기본 기사", color: "#CCC", jumpMult: 1, goldMult: 1, icon: "🛡️" },
-    golden: { name: "Golden", price: 500, desc: "골드 획득 2배", color: "#FFD700", jumpMult: 1, goldMult: 2, icon: "👑" },
-    hero: { name: "Hero", price: 800, desc: "1회 부활 (미구현)", color: "#4CAF50", jumpMult: 1, goldMult: 1, icon: "🗡️" },
-    princess: { name: "Princess", price: 600, desc: "우아한 드레스", color: "#FF69B4", jumpMult: 1, goldMult: 1, icon: "👗" },
-    assassin: { name: "Assassin", price: 900, desc: "함정 무시", color: "#9C27B0", jumpMult: 1, goldMult: 1, icon: "🥷" },
-    samurai: { name: "Samurai", price: 1200, desc: "점프력↓ 바위무시", color: "#B71C1C", jumpMult: 0.7, goldMult: 1, icon: "👹" },
-    elf: { name: "Elf", price: 1500, desc: "점프 거리 2배", color: "#76FF03", jumpMult: 1.5, goldMult: 1, icon: "🧝" }
-};
+// 구간 정의
+const ZONES = [
+    { name: 'BASIC', start: 0, end: 2000, bgIndex: 0 },
+    { name: 'ROCK', start: 2000, end: 4000, bgIndex: 1 },
+    { name: 'SNOW', start: 4000, end: 6000, bgIndex: 2 },
+    { name: 'LAVA', start: 6000, end: 8000, bgIndex: 3 },
+    { name: 'CASTLE', start: 8000, end: 10000, bgIndex: 4 }
+];
 
-// --- Game Classes ---
-
-class Hold {
-    constructor(x, y, type) {
-        this.x = x;
-        this.y = y;
-        this.type = type;
-        this.radius = type === 'ice' ? 40 : 20; // Visual radius
-        this.hitbox = type === 'ice' ? 50 : 35; // Grab radius
-        this.active = true;
-        this.visible = true;
-        this.timer = 0;
-        this.originalX = x;
-        this.originalY = y;
-        this.hasGold = Math.random() < 0.3;
-        this.goldAmount = Math.floor(Math.random() * 10) + 1;
-        
-        // Type specific init
-        if (type === 'breaking') this.breakTimer = 120; // 2 seconds at 60fps
-        if (type === 'lava') {
-            this.cycleTimer = 0;
-            this.visible = true;
-        }
-        if (type === 'ice') {
-            this.width = 120;
-            this.height = 30;
-        }
+class ImageLoader {
+    constructor() {
+        this.images = {};
+        this.loaded = 0;
+        this.total = 0;
+        this.basePath = 'assets/';
     }
 
-    update(dt, playerY) {
-        this.timer += dt;
-
-        // Behaviors
-        if (this.type === 'rock_bug') {
-            this.x = this.originalX + Math.sin(this.timer * 0.05) * 50;
-        } else if (this.type === 'rock_bug_vertical') {
-            this.y = this.originalY + Math.sin(this.timer * 0.05) * 50;
-        } else if (this.type === 'snow_bug') {
-            this.x = this.originalX + Math.sin(this.timer * 0.1) * 80; // Fast
-        } else if (this.type === 'ice' && this.grabbed) {
-            this.y += 1; // Slide down
-            this.originalY += 1;
-        } else if (this.type === 'lava') {
-            this.cycleTimer++;
-            // 4 sec visible (240f), 2 sec gone (120f)
-            if (this.cycleTimer < 240) {
-                this.visible = true;
-                this.active = true;
-            } else if (this.cycleTimer < 360) {
-                this.visible = false;
-                this.active = false;
-            } else {
-                this.cycleTimer = 0;
-            }
-        } else if (this.type === 'magic') {
-            // Teleport every 1.5s (90f)
-            if (this.timer % 90 === 0) {
-                this.x = (this.originalX + Math.random() * 100 - 50);
-                this.y = (this.originalY + Math.random() * 100 - 50);
-            }
-        }
-        
-        // Breaking logic handled in player interaction
+    load(key, path) {
+        this.total++;
+        const img = new Image();
+        img.onload = () => {
+            this.loaded++;
+            this.images[key] = img;
+        };
+        img.onerror = () => {
+            console.warn(`Failed to load: ${path}`);
+            this.loaded++;
+        };
+        img.src = this.basePath + path;
+        return img;
     }
 
-    draw(ctx) {
-        if (!this.visible) return;
-
-        ctx.save();
-        ctx.translate(this.x, this.y);
-
-        // Draw Hold Body
-        if (this.type === 'ice') {
-            ctx.fillStyle = '#AEEEEE';
-            ctx.fillRect(-this.width/2, -10, this.width, 20);
-        } else {
-            // Base Color
-            switch(this.type) {
-                case 'normal': ctx.fillStyle = '#888'; break;
-                case 'breaking': 
-                    ctx.fillStyle = (this.grabbed && this.breakTimer < 30 && this.breakTimer % 10 < 5) ? '#FF0000' : '#8B4513'; 
-                    break;
-                case 'rock_bug': case 'rock_bug_vertical': ctx.fillStyle = '#5D4037'; break;
-                case 'snow_bug': ctx.fillStyle = '#E0F7FA'; break;
-                case 'lava_bug': ctx.fillStyle = '#FF5722'; break;
-                case 'lava': ctx.fillStyle = '#BF360C'; break;
-                case 'magic': ctx.fillStyle = `hsl(${this.timer % 360}, 70%, 50%)`; break;
-                case 'trap': ctx.fillStyle = '#3E2723'; break;
-                default: ctx.fillStyle = '#888';
-            }
-
-            ctx.beginPath();
-            ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Detail / Highlight
-            ctx.beginPath();
-            ctx.arc(-5, -5, 5, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255,255,255,0.3)';
-            ctx.fill();
+    loadAll() {
+        // 배경
+        for(let i = 0; i <= 5; i++) {
+            this.load(`bg_${i}`, `background/background_${i}.png`);
         }
+        this.load('bg_1to2', 'background/background_1_to_2.png');
+        this.load('bg_2to3', 'background/background_2_to_3.png');
+        this.load('bg_3to4', 'background/background_3_to_4.png');
+        this.load('bg_4to5', 'background/background_4_to_5.png');
+        this.load('tower', 'background/demonkingstower.gif');
 
-        // Draw Gold if uncollected
-        if (this.hasGold) {
-            ctx.fillStyle = '#FFD700';
-            ctx.beginPath();
-            ctx.arc(10, -10, 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#DAA520';
-            ctx.stroke();
+        // 이펙트
+        this.load('arrow', 'effect/effect_arrow.png');
+        this.load('beforegoblin', 'effect/effect_beforegoblin.png');
+        this.load('goblin', 'effect/effect_goblin.png');
+        for(let i = 1; i <= 5; i++) {
+            this.load(`catch_${i}`, `effect/effect_catchhold_${i}.gif`);
         }
+        this.load('lava_effect', 'effect/effect_lava.png');
+        this.load('lava_sign', 'effect/effect_lava_sign.png');
+        this.load('rock_effect', 'effect/effect_rock.png');
+        this.load('rock_sign', 'effect/effect_rock_sign.png');
+        this.load('wind', 'effect/effect_wind.png');
 
-        ctx.restore();
+        // 홀드
+        this.load('hold_basic', 'hold/hold_basic.png');
+        this.load('hold_ice', 'hold/hold_ice.png');
+        this.load('hold_lava', 'hold/hold_lava.png');
+        this.load('hold_magic', 'hold/hold_magic.gif');
+        this.load('hold_lava_appear', 'hold/hold_lava_appear.gif');
+        this.load('hold_lava_disappear', 'hold/hold_lava_disappear.gif');
+        this.load('hold_magic_appear', 'hold/hold_magic_appear.gif');
+        this.load('hold_magic_disappear', 'hold/hold_magic_disappear.gif');
+        this.load('hold_magic_location', 'hold/hold_magic_location.png');
+        this.load('hold_lavabug', 'hold/hold_lavabug.gif');
+        this.load('hold_rockbug', 'hold/hold_rockbug.gif');
+        this.load('hold_snowbug', 'hold/hold_snowbug.gif');
+        this.load('hold_trap', 'hold/hold_trap.png');
+
+        // 플레이어
+        this.load('player_left', 'player/player_left.gif');
+        this.load('player_left_jump', 'player/player_left_jump.gif');
+        this.load('player_right', 'player/player_right.gif');
+        this.load('player_right_jump', 'player/player_right_jump.gif');
+    }
+
+    get(key) {
+        return this.images[key];
+    }
+
+    isReady() {
+        return this.loaded >= this.total;
     }
 }
 
-class Player {
-    constructor(skinData) {
-        this.x = CONSTANTS.GAME.SCREEN_WIDTH / 2;
-        this.y = CONSTANTS.GAME.SCREEN_HEIGHT - 150;
-        this.vx = 0;
-        this.vy = 0;
-        this.radius = 15;
-        this.state = 'ON_HOLD'; // ON_HOLD, JUMPING, FALLING, DEAD
-        this.angle = -90; // Up
-        this.angleDir = 1;
-        this.skin = skinData;
-        this.currentHold = null;
-        this.scoreDistance = 0;
-        this.collectedGold = 0;
-    }
-
-    update(holds, obstacleManager, cameraY) {
-        if (this.state === 'DEAD') return;
-
-        // Distance Calculation (Inverted Y)
-        let currentDist = Math.floor((CONSTANTS.GAME.SCREEN_HEIGHT - 100 - this.y) / 10);
-        if (currentDist > this.scoreDistance) this.scoreDistance = currentDist;
-
-        if (this.state === 'ON_HOLD') {
-            // Arrow oscillation
-            this.angle += CONSTANTS.GAME.ARROW_SPEED * this.angleDir;
-            if (this.angle > -30) this.angleDir = -1;
-            if (this.angle < -150) this.angleDir = 1;
-
-            if (this.currentHold) {
-                this.x = this.currentHold.x;
-                this.y = this.currentHold.y + 25; // Hang below hold
-                
-                // Breaking Hold Logic
-                if (this.currentHold.type === 'breaking' && this.skin.name !== 'Assassin') {
-                    this.currentHold.breakTimer--;
-                    if (this.currentHold.breakTimer <= 0) {
-                        this.currentHold.active = false;
-                        this.currentHold.visible = false; // Visual break
-                        this.fall();
-                    }
-                }
-                
-                // Lava Logic
-                if (this.currentHold.type === 'lava' && !this.currentHold.active) {
-                    this.fall();
-                }
-            }
-        } else if (this.state === 'JUMPING') {
-            // Physics
-            this.vy += CONSTANTS.PHYSICS.GRAVITY;
-            this.x += this.vx;
-            this.y += this.vy;
-
-            // Wall Bounce
-            if (this.x < this.radius) {
-                this.x = this.radius;
-                this.vx *= -CONSTANTS.PHYSICS.WALL_BOUNCE;
-            }
-            if (this.x > CONSTANTS.GAME.SCREEN_WIDTH - this.radius) {
-                this.x = CONSTANTS.GAME.SCREEN_WIDTH - this.radius;
-                this.vx *= -CONSTANTS.PHYSICS.WALL_BOUNCE;
-            }
-
-            // Fall check
-            if (this.y > cameraY + CONSTANTS.GAME.SCREEN_HEIGHT + 100) {
-                this.die();
-            }
-        }
-    }
-
-    jump() {
-        if (this.state !== 'ON_HOLD') return;
-        
-        const rad = this.angle * Math.PI / 180;
-        const speed = CONSTANTS.PHYSICS.JUMP_SPEED * this.skin.jumpMult;
-        
-        this.vx = Math.cos(rad) * speed;
-        this.vy = Math.sin(rad) * speed;
-        this.state = 'JUMPING';
-        
-        if (this.currentHold) {
-            this.currentHold.grabbed = false;
-            this.currentHold = null;
-        }
-    }
-
-    tryGrab(holds) {
-        if (this.state !== 'JUMPING') return false;
-
-        // Find nearest hold
-        for (let hold of holds) {
-            if (!hold.active) continue;
-            
-            const dx = this.x - hold.x;
-            const dy = (this.y - 25) - hold.y; // Adjust for hand position
-            const dist = Math.sqrt(dx*dx + dy*dy);
-
-            if (dist < CONSTANTS.GAME.HOLD_GRAB_DIST) {
-                // Success Grab
-                this.state = 'ON_HOLD';
-                this.vx = 0;
-                this.vy = 0;
-                this.currentHold = hold;
-                hold.grabbed = true;
-                
-                // Collect Gold
-                if (hold.hasGold) {
-                    this.collectedGold += hold.goldAmount * this.skin.goldMult;
-                    hold.hasGold = false;
-                    // Visual popup could go here
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    fall() {
-        this.state = 'JUMPING';
-        this.currentHold = null;
-        // Small push to simulate falling off
-        this.vy = 2; 
-    }
-
-    die() {
-        this.state = 'DEAD';
-    }
-
-    draw(ctx) {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-
-        // Draw Player Body
-        ctx.fillStyle = this.skin.color;
-        
-        // Body
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 10, 15, 0, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Head
-        ctx.beginPath();
-        ctx.arc(0, -15, 12, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Eyes
-        ctx.fillStyle = 'white';
-        if (this.state === 'DEAD') {
-            ctx.fillText("x x", -6, -12);
-        } else {
-            ctx.beginPath();
-            ctx.arc(-4, -15, 3, 0, Math.PI * 2);
-            ctx.arc(4, -15, 3, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        // Arrow (only when on hold)
-        if (this.state === 'ON_HOLD') {
-            ctx.rotate(this.angle * Math.PI / 180);
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.6)';
-            ctx.beginPath();
-            ctx.moveTo(40, -10);
-            ctx.lineTo(60, 0);
-            ctx.lineTo(40, 10);
-            ctx.fill();
-            
-            // Dotted line
-            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(50, 0);
-            ctx.stroke();
-        }
-
-        ctx.restore();
-    }
-}
-
-// --- Main Application ---
-class GameApp {
+class Game {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
+        this.canvas.width = CONFIG.WIDTH;
+        this.canvas.height = CONFIG.HEIGHT;
         
-        // Resize handling
-        this.resize();
-        window.addEventListener('resize', () => this.resize());
-
-        // State
+        this.loader = new ImageLoader();
+        this.loader.loadAll();
+        
+        this.state = 'LOGIN';
         this.user = null;
-        this.userData = { gold: 0, skins: ['knight'], currentSkin: 'knight', bestDist: 0 };
-        this.gameRunning = false;
-        
-        // Game Objects
+        this.distance = 0;
+        this.cameraY = 0;
         this.player = null;
         this.holds = [];
-        this.cameraY = 0;
-        this.bgY = 0;
-        this.frameCount = 0;
-        
-        // Input
-        this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); this.handleInput(); }, {passive: false});
-        this.canvas.addEventListener('mousedown', (e) => { this.handleInput(); });
-        
-        // Init UI
-        this.loadUser(); // Try auto login
-        this.renderShop();
+        this.rocks = [];
+        this.goblins = [];
+        this.lavas = [];
+        this.timer = 0;
+        this.wind = { active: false, direction: 0, timer: 0 };
+        this.effects = []; // 이펙트 파티클
+        this.transitionAlpha = 0; // 구간 전환 효과
+        this.currentZoneIndex = 0;
+
+        this.init();
+        this.bindEvents();
     }
 
-    resize() {
-        const container = document.getElementById('game-container');
-        this.canvas.width = container.clientWidth;
-        this.canvas.height = container.clientHeight;
-        CONSTANTS.GAME.SCREEN_WIDTH = this.canvas.width;
-        CONSTANTS.GAME.SCREEN_HEIGHT = this.canvas.height;
+    init() {
+        const saved = localStorage.getItem('ck_logged_in');
+        if (saved) {
+            this.user = JSON.parse(localStorage.getItem(`ck_user_${saved}`));
+            this.showMenu();
+        }
     }
 
-    // --- Data Management ---
+    bindEvents() {
+        this.canvas.addEventListener('mousedown', (e) => this.handleInput(e));
+        this.canvas.addEventListener('touchstart', (e) => { 
+            e.preventDefault(); 
+            this.handleInput(e); 
+        });
+    }
+
     login() {
-        const input = document.getElementById('username');
-        const name = input.value.trim();
-        if (!name) return alert("이름을 입력해주세요!");
+        const name = document.getElementById('username').value.trim();
+        const pass = document.getElementById('password').value.trim();
+        if(!name || !pass) return alert("입력해줘!");
         
-        this.user = name;
-        this.loadData();
-        this.updateMenuUI();
-        this.showScreen('screen-menu');
-    }
-
-    logout() {
-        this.user = null;
-        localStorage.removeItem('ck_last_user');
-        this.showScreen('screen-login');
-    }
-
-    loadUser() {
-        const lastUser = localStorage.getItem('ck_last_user');
-        if (lastUser) {
-            this.user = lastUser;
-            this.loadData();
-            this.updateMenuUI();
-            this.showScreen('screen-menu');
+        let data = localStorage.getItem(`ck_user_${name}`);
+        if(data) {
+            data = JSON.parse(data);
+            if(data.pass !== pass) return alert("비밀번호 틀림!");
+            this.user = data;
         } else {
-            this.showScreen('screen-login');
+            this.user = { name, pass, best: 0 };
         }
+        localStorage.setItem('ck_logged_in', name);
+        this.save();
+        this.showMenu();
     }
 
-    loadData() {
-        localStorage.setItem('ck_last_user', this.user);
-        const data = localStorage.getItem(`ck_data_${this.user}`);
-        if (data) {
-            this.userData = JSON.parse(data);
-        } else {
-            // New user defaults
-            this.userData = { gold: 0, skins: ['knight'], currentSkin: 'knight', bestDist: 0 };
-        }
+    save() { 
+        localStorage.setItem(`ck_user_${this.user.name}`, JSON.stringify(this.user)); 
+    }
+    
+    logout() { 
+        localStorage.removeItem('ck_logged_in'); 
+        location.reload(); 
     }
 
-    saveData() {
-        if (!this.user) return;
-        localStorage.setItem(`ck_data_${this.user}`, JSON.stringify(this.userData));
+    showMenu() {
+        this.state = 'MENU';
+        document.getElementById('login-screen').className = 'ui-layer hidden';
+        document.getElementById('game-over').className = 'ui-layer hidden';
+        document.getElementById('main-menu').className = 'ui-layer';
+        document.getElementById('welcome-msg').innerText = `${this.user.name} 기사, 준비되었나?`;
+        document.getElementById('best-dist').innerText = this.user.best;
     }
 
-    // --- Game Logic ---
-    startGame() {
-        this.showScreen(null); // Hide all screens
-        document.getElementById('hud').style.display = 'flex';
-        
-        // Reset Game
-        this.player = new Player(SKINS[this.userData.currentSkin]);
-        this.holds = [];
+    start() {
+        this.state = 'PLAYING';
+        this.distance = 0;
         this.cameraY = 0;
-        this.gameRunning = true;
-        this.frameCount = 0;
+        this.timer = 0;
+        this.rocks = [];
+        this.goblins = [];
+        this.lavas = [];
+        this.effects = [];
+        this.wind = { active: false, direction: 0, timer: 0 };
+        this.currentZoneIndex = 0;
+        this.transitionAlpha = 0;
         
-        // Initial Holds
-        this.generateHold(this.canvas.width/2, this.canvas.height - 100, 'normal'); // Start hold
-        for (let i = 0; i < 20; i++) {
-            this.spawnNextHold();
-        }
+        document.getElementById('main-menu').className = 'ui-layer hidden';
+        document.getElementById('game-over').className = 'ui-layer hidden';
+        document.getElementById('hud').className = '';
+
+        this.player = {
+            x: CONFIG.WIDTH/2, 
+            y: CONFIG.HEIGHT - 120, 
+            vx: 0, 
+            vy: 0, 
+            radius: 25,
+            onHold: null, 
+            arrowAngle: 0, 
+            arrowDir: 1, 
+            grabReady: false,
+            rotation: 0,
+            facingLeft: false,
+            isJumping: false
+        };
+
+        this.holds = [{ 
+            x: CONFIG.WIDTH/2, 
+            y: CONFIG.HEIGHT - 80, 
+            type: 'normal', 
+            active: true,
+            timer: 0,
+            originX: CONFIG.WIDTH/2,
+            originY: CONFIG.HEIGHT - 80
+        }];
+        this.player.onHold = this.holds[0];
         
-        // Attach player to first hold
-        this.player.currentHold = this.holds[0];
-        this.player.x = this.holds[0].x;
-        this.player.y = this.holds[0].y + 25;
-
-        // Start Loop
-        requestAnimationFrame(() => this.loop());
-    }
-
-    generateHold(x, y, type) {
-        const hold = new Hold(x, y, type);
-        this.holds.push(hold);
-        return hold;
-    }
-
-    spawnNextHold() {
-        const highestHold = this.holds[this.holds.length - 1];
-        const minY = highestHold.y - 180 * this.player.skin.jumpMult; // Max jump height approx
-        const maxY = highestHold.y - 80;
-        
-        const nextY = Math.random() * (maxY - minY) + minY;
-        
-        // Zigzag logic
-        let nextX;
-        if (highestHold.x < this.canvas.width / 2) {
-            nextX = Math.random() * (this.canvas.width/2 - 40) + this.canvas.width/2;
-        } else {
-            nextX = Math.random() * (this.canvas.width/2 - 40) + 20;
-        }
-
-        // Determine Type based on Zone
-        const dist = Math.abs(nextY) / 10; // Approx distance
-        let currentZone = CONSTANTS.ZONES[0];
-        for(let z of CONSTANTS.ZONES) {
-            if(dist >= z.start) currentZone = z;
-        }
-
-        let type = 'normal';
-        if (Math.random() < 0.3) {
-            type = currentZone.holdTypes[Math.floor(Math.random() * currentZone.holdTypes.length)];
-        }
-
-        this.generateHold(nextX, nextY, type);
+        for(let i = 0; i < 10; i++) this.spawnHold();
+        this.loop();
     }
 
     handleInput() {
-        if (!this.gameRunning) return;
+        if(this.state !== 'PLAYING') return;
+        
+        if(this.player.onHold) {
+            // 점프
+            const rad = (this.player.arrowAngle - 90) * Math.PI / 180;
+            this.player.vx = CONFIG.JUMP_SPEED * Math.cos(rad);
+            this.player.vy = CONFIG.JUMP_SPEED * Math.sin(rad);
+            this.player.onHold = null;
+            this.player.grabReady = false;
+            this.player.isJumping = true;
+            this.player.facingLeft = this.player.vx < 0;
+            
+            setTimeout(() => this.player.grabReady = true, 150);
+        } else {
+            // 잡기 시도
+            const target = this.holds.find(h => {
+                const d = Math.hypot(this.player.x - h.x, this.player.y - h.y);
+                return h.active && d < CONFIG.HOLD_GRAB_DISTANCE && this.player.grabReady;
+            });
+            
+            if(target) {
+                this.player.onHold = target;
+                this.player.vx = 0; 
+                this.player.vy = 0;
+                this.player.isJumping = false;
+                this.player.rotation = 0;
+                
+                // 홀드 타입별 처리
+                if(target.type === 'breaking') {
+                    target.timer = 120; // 2초
+                }
+                if(target.type === 'trap') {
+                    this.spawnGoblin(target);
+                }
+                
+                // 캐치 이펙트
+                const zoneIdx = this.getZoneIndex();
+                this.addEffect(target.x, target.y, `catch_${zoneIdx + 1}`, 30);
+            }
+        }
+    }
 
-        if (this.player.state === 'ON_HOLD') {
-            this.player.jump();
-        } else if (this.player.state === 'JUMPING') {
-            const grabbed = this.player.tryGrab(this.holds);
-            // Visual feedback for grab attempt could go here
+    spawnHold() {
+        const last = this.holds[this.holds.length - 1];
+        const zone = this.getZone();
+        
+        let newY = last.y - (CONFIG.HOLD_SPAWN_DISTANCE + Math.random() * 80);
+        let newX;
+        
+        // x좌표는 이전 홀드와 반대편에 생성
+        if(last.x < CONFIG.WIDTH / 2) {
+            newX = CONFIG.WIDTH / 2 + Math.random() * (CONFIG.WIDTH / 2 - 60);
+        } else {
+            newX = 40 + Math.random() * (CONFIG.WIDTH / 2 - 60);
+        }
+
+        let type = this.getHoldType(zone);
+
+        this.holds.push({ 
+            x: newX, 
+            y: newY, 
+            type, 
+            active: true, 
+            timer: 0, 
+            angle: Math.random() * Math.PI * 2,
+            originX: newX, 
+            originY: newY
+        });
+    }
+
+    getHoldType(zone) {
+        const rand = Math.random();
+        
+        if(zone === 'BASIC') {
+            if(rand < 0.15) return 'breaking';
+            return 'normal';
+        } else if(zone === 'ROCK') {
+            if(rand < 0.3) return 'rock_bug';
+            if(rand < 0.5) return 'rock_bug_v';
+            if(rand < 0.65) return 'breaking';
+            return 'normal';
+        } else if(zone === 'SNOW') {
+            if(rand < 0.25) return 'snow_bug';
+            if(rand < 0.45) return 'ice';
+            if(rand < 0.6) return 'breaking';
+            return 'normal';
+        } else if(zone === 'LAVA') {
+            if(rand < 0.25) return 'lava_bug';
+            if(rand < 0.45) return 'lava';
+            if(rand < 0.6) return 'breaking';
+            return 'normal';
+        } else { // CASTLE
+            if(rand < 0.2) return 'magic';
+            if(rand < 0.35) return 'trap';
+            if(rand < 0.5) return 'breaking';
+            return 'normal';
+        }
+    }
+
+    spawnGoblin(hold) {
+        // 트랩 홀드를 밟으면 2초 후 고블린 출현
+        this.addEffect(hold.x, hold.y - 50, 'beforegoblin', 120);
+        
+        setTimeout(() => {
+            if(this.state === 'PLAYING') {
+                this.goblins.push({ 
+                    x: hold.x, 
+                    y: hold.y - 400, 
+                    vy: 5 
+                });
+            }
+        }, 2000);
+    }
+
+    getZone() {
+        for(let zone of ZONES) {
+            if(this.distance >= zone.start && this.distance < zone.end) {
+                return zone.name;
+            }
+        }
+        return 'CASTLE';
+    }
+
+    getZoneIndex() {
+        for(let i = 0; i < ZONES.length; i++) {
+            if(this.distance >= ZONES[i].start && this.distance < ZONES[i].end) {
+                return i;
+            }
+        }
+        return 4;
+    }
+
+    addEffect(x, y, imageKey, duration) {
+        this.effects.push({
+            x, y, imageKey, duration, timer: 0
+        });
+    }
+
+    update() {
+        this.timer++;
+        const p = this.player;
+
+        // 구간 전환 체크
+        const newZoneIdx = this.getZoneIndex();
+        if(newZoneIdx !== this.currentZoneIndex) {
+            this.currentZoneIndex = newZoneIdx;
+            this.transitionAlpha = 1.0; // 전환 효과 시작
+        }
+        if(this.transitionAlpha > 0) {
+            this.transitionAlpha -= 0.02;
+        }
+
+        if(p.onHold) {
+            // 홀드에 매달려 있을 때
+            p.x = p.onHold.x;
+            p.y = p.onHold.y;
+            p.arrowAngle += 2 * p.arrowDir;
+            if(Math.abs(p.arrowAngle) > CONFIG.ARROW_ANGLE_RANGE) {
+                p.arrowDir *= -1;
+            }
+            
+            // 부서지는 홀드
+            if(p.onHold.type === 'breaking' && p.onHold.timer > 0) {
+                p.onHold.timer--;
+                if(p.onHold.timer <= 0) { 
+                    p.onHold.active = false; 
+                    p.onHold = null; 
+                }
+            }
+            
+            // 얼음 홀드 (미끄러짐)
+            if(p.onHold.type === 'ice') {
+                p.onHold.y += 1.5;
+            }
+        } else {
+            // 공중에 있을 때
+            p.vy += CONFIG.GRAVITY;
+            
+            // 바람 영향 (설산 구간)
+            if(this.wind.active) {
+                p.vx += this.wind.direction * 0.3;
+            }
+            
+            p.x += p.vx; 
+            p.y += p.vy;
+            p.rotation += p.vx > 0 ? 5 : -5;
+            
+            // 벽 충돌 (튕김)
+            if(p.x < p.radius || p.x > CONFIG.WIDTH - p.radius) {
+                p.vx *= -0.6;
+                p.x = p.x < p.radius ? p.radius : CONFIG.WIDTH - p.radius;
+            }
+        }
+
+        // 카메라 추적
+        let targetCam = p.y - CONFIG.HEIGHT * 0.6;
+        this.cameraY += (targetCam - this.cameraY) * 0.1;
+
+        // 홀드 업데이트
+        this.holds.forEach(h => {
+            // 움직이는 홀드들
+            if(h.type === 'rock_bug') {
+                h.x = h.originX + Math.sin(this.timer * 0.05) * 100;
+            }
+            if(h.type === 'rock_bug_v') {
+                h.y = h.originY + Math.sin(this.timer * 0.05) * 80;
+            }
+            if(h.type === 'snow_bug') {
+                h.x = h.originX + Math.sin(this.timer * 0.08) * 120;
+            }
+            if(h.type === 'lava_bug') {
+                h.x = h.originX + Math.cos(this.timer * 0.1) * 80;
+                h.y = h.originY + Math.sin(this.timer * 0.1) * 80;
+            }
+            
+            // 깜빡이는 용암 홀드 (4초 보임, 2초 안보임)
+            if(h.type === 'lava') {
+                h.active = (this.timer % 360 < 240);
+            }
+            
+            // 순간이동 마법 홀드
+            if(h.type === 'magic') {
+                if(this.timer % 90 === 0) {
+                    h.x = h.originX + (Math.random() - 0.5) * 200;
+                    h.y = h.originY + (Math.random() - 0.5) * 100;
+                }
+            }
+        });
+
+        // 구간별 장애물
+        const zone = this.getZone();
+        
+        // 암석 지대: 돌 낙하
+        if(zone === 'ROCK' && this.timer % 120 === 0) {
+            const rockX = Math.random() * CONFIG.WIDTH;
+            this.rocks.push({ 
+                x: rockX, 
+                y: this.cameraY - 50, 
+                vy: 4 + Math.random() * 3 
+            });
+            this.addEffect(rockX, this.cameraY - 80, 'rock_sign', 60);
+        }
+        this.rocks.forEach(r => {
+            r.y += r.vy;
+            if(Math.hypot(p.x - r.x, p.y - r.y) < p.radius + 20) {
+                this.die();
+            }
+        });
+
+        // 설산 지대: 바람
+        if(zone === 'SNOW') {
+            this.wind.timer--;
+            if(this.wind.timer <= 0) {
+                this.wind.active = !this.wind.active;
+                if(this.wind.active) {
+                    this.wind.direction = Math.random() < 0.5 ? -1 : 1;
+                    this.wind.timer = 180; // 3초
+                } else {
+                    this.wind.timer = 120; // 2초
+                }
+            }
+        } else {
+            this.wind.active = false;
+        }
+
+        // 용암 지대: 용암 낙하
+        if(zone === 'LAVA' && this.timer % 100 === 0) {
+            const lavaX = Math.random() * CONFIG.WIDTH;
+            this.lavas.push({ 
+                x: lavaX, 
+                y: this.cameraY - 50, 
+                vy: 6 + Math.random() * 2 
+            });
+            this.addEffect(lavaX, this.cameraY - 80, 'lava_sign', 50);
+        }
+        this.lavas.forEach(lava => {
+            lava.y += lava.vy;
+            if(Math.hypot(p.x - lava.x, p.y - lava.y) < p.radius + 25) {
+                this.die();
+            }
+        });
+
+        // 고블린 (마왕성 구간 및 트랩)
+        this.goblins.forEach(g => {
+            g.y += g.vy;
+            if(Math.hypot(p.x - g.x, p.y - g.y) < p.radius + 25) {
+                this.die();
+            }
+        });
+
+        // 이펙트 업데이트
+        this.effects = this.effects.filter(e => {
+            e.timer++;
+            return e.timer < e.duration;
+        });
+
+        // 거리 갱신
+        this.distance = Math.max(this.distance, Math.floor((CONFIG.HEIGHT - 120 - p.y) / 10));
+        document.getElementById('dist-txt').innerText = this.distance + "m";
+        document.getElementById('zone-txt').innerText = this.getZone() + " ZONE";
+
+        // 홀드 생성
+        if(this.holds[this.holds.length - 1].y > p.y - 1000) {
+            this.spawnHold();
+        }
+
+        // 게임 종료 조건
+        if(p.y > this.cameraY + CONFIG.HEIGHT + 100) {
+            this.die();
+        }
+        if(this.distance >= 10000) {
+            this.win();
+        }
+    }
+
+    die() {
+        this.state = 'GAMEOVER';
+        if(this.distance > this.user.best) { 
+            this.user.best = this.distance; 
+            this.save(); 
+        }
+        document.getElementById('over-title').innerText = "원정 실패";
+        document.getElementById('over-title').style.color = "var(--danger)";
+        document.getElementById('over-stats').innerText = `기록: ${this.distance}m\n목표: 10,000m`;
+        document.getElementById('game-over').className = 'ui-layer';
+    }
+
+    win() {
+        this.state = 'GAMEOVER';
+        if(this.distance > this.user.best) { 
+            this.user.best = this.distance; 
+            this.save(); 
+        }
+        document.getElementById('over-title').innerText = "탑의 정복자!";
+        document.getElementById('over-title').style.color = "var(--primary)";
+        document.getElementById('over-stats').innerText = "축하합니다! 마왕성을 정복했습니다!";
+        document.getElementById('game-over').className = 'ui-layer';
+    }
+
+    draw() {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+
+        // 배경 그리기
+        this.drawBackground();
+
+        // 바람 이펙트
+        if(this.wind.active) {
+            const windImg = this.loader.get('wind');
+            if(windImg) {
+                const windX = this.wind.direction > 0 ? 0 : CONFIG.WIDTH;
+                ctx.save();
+                ctx.globalAlpha = 0.5;
+                if(this.wind.direction < 0) {
+                    ctx.translate(CONFIG.WIDTH, 0);
+                    ctx.scale(-1, 1);
+                }
+                ctx.drawImage(windImg, 0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+                ctx.restore();
+            }
+        }
+
+        // 홀드 그리기
+        this.holds.forEach(h => {
+            if(!h.active) return;
+            
+            const screenY = h.y - this.cameraY;
+            if(screenY < -100 || screenY > CONFIG.HEIGHT + 100) return;
+
+            let img = this.loader.get('hold_basic');
+            if(h.type === 'ice') img = this.loader.get('hold_ice');
+            else if(h.type === 'lava') img = this.loader.get('hold_lava');
+            else if(h.type === 'magic') img = this.loader.get('hold_magic');
+            else if(h.type === 'trap') img = this.loader.get('hold_trap');
+            else if(h.type === 'rock_bug' || h.type === 'rock_bug_v') img = this.loader.get('hold_rockbug');
+            else if(h.type === 'snow_bug') img = this.loader.get('hold_snowbug');
+            else if(h.type === 'lava_bug') img = this.loader.get('hold_lavabug');
+
+            if(img) {
+                const size = h.type === 'ice' ? 180 : 60;
+                ctx.drawImage(img, h.x - size/2, screenY - size/2, size, size);
+            } else {
+                // Fallback
+                ctx.fillStyle = this.getHoldColor(h.type);
+                ctx.beginPath();
+                if(h.type === 'ice') {
+                    ctx.rect(h.x - 90, screenY - 20, 180, 40);
+                } else {
+                    ctx.arc(h.x, screenY, 30, 0, Math.PI * 2);
+                }
+                ctx.fill();
+            }
+            
+            // 잡기 가능 표시
+            if(!this.player.onHold && this.player.grabReady) {
+                const d = Math.hypot(this.player.x - h.x, this.player.y - h.y);
+                if(d < CONFIG.HOLD_GRAB_DISTANCE) {
+                    ctx.strokeStyle = '#0f0'; 
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(h.x, screenY, 35, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            
+            // 부서지는 홀드 타이머 표시
+            if(h.type === 'breaking' && h.timer > 0) {
+                ctx.fillStyle = '#f44';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(Math.ceil(h.timer / 60), h.x, screenY - 40);
+            }
+        });
+
+        // 장애물 그리기
+        this.rocks.forEach(r => {
+            const img = this.loader.get('rock_effect');
+            if(img) {
+                ctx.drawImage(img, r.x - 20, r.y - this.cameraY - 20, 40, 40);
+            } else {
+                ctx.fillStyle = '#666';
+                ctx.beginPath();
+                ctx.arc(r.x, r.y - this.cameraY, 20, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        this.lavas.forEach(lava => {
+            const img = this.loader.get('lava_effect');
+            if(img) {
+                ctx.drawImage(img, lava.x - 25, lava.y - this.cameraY - 25, 50, 50);
+            } else {
+                ctx.fillStyle = '#f80';
+                ctx.beginPath();
+                ctx.arc(lava.x, lava.y - this.cameraY, 25, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        this.goblins.forEach(g => {
+            const img = this.loader.get('goblin');
+            if(img) {
+                ctx.drawImage(img, g.x - 25, g.y - this.cameraY - 25, 50, 50);
+            } else {
+                ctx.fillStyle = '#800';
+                ctx.beginPath();
+                ctx.arc(g.x, g.y - this.cameraY, 25, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        // 이펙트 그리기
+        this.effects.forEach(e => {
+            const img = this.loader.get(e.imageKey);
+            if(img) {
+                ctx.save();
+                ctx.globalAlpha = 1 - (e.timer / e.duration);
+                ctx.drawImage(img, e.x - 30, e.y - this.cameraY - 30, 60, 60);
+                ctx.restore();
+            }
+        });
+
+        // 플레이어 그리기
+        this.drawPlayer();
+
+        // 구간 전환 효과
+        if(this.transitionAlpha > 0) {
+            ctx.save();
+            ctx.globalAlpha = this.transitionAlpha;
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+            ctx.restore();
+        }
+    }
+
+    drawBackground() {
+        const ctx = this.ctx;
+        const zoneIdx = this.getZoneIndex();
+        
+        const scale = CONFIG.WIDTH / 2880;
+        const bg0Height = 1440 * scale;  // bg_0 높이
+        const bgHeight = 6240 * scale;   // bg_1~5 높이
+        const transHeight = 960 * scale; // 전환 이미지 높이
+        
+        // bg_0의 월드 좌표 (맨 바닥)
+        const bg0WorldY = CONFIG.HEIGHT - 120;
+        
+        // === 1. 각 구간의 반복 배경 그리기 (bg_1~5) ===
+        for(let z = 1; z <= 5; z++) {
+            const zoneStart = ZONES[z - 1].start * 10; // 구간 시작 높이 (픽셀)
+            const zoneEnd = ZONES[z - 1].end * 10;     // 구간 끝 높이
+            
+            // 구간 시작점 월드 좌표
+            const zoneSplitY = bg0WorldY - zoneStart;
+            
+            const bg = this.loader.get(`bg_${z}`);
+            if(!bg) continue;
+            
+            // 전환 이미지가 있으면 그 위부터 시작
+            const startY = z > 1 ? (zoneSplitY - transHeight) : zoneSplitY;
+            
+            // 현재 카메라 위치 기준으로 타일링
+            let currY = startY - bgHeight;
+            
+            // 위쪽으로 무한 반복
+            while(currY - this.cameraY > -bgHeight - CONFIG.HEIGHT) {
+                const screenY = currY - this.cameraY;
+                
+                // 화면에 보이는 것만 그리기
+                if(screenY < CONFIG.HEIGHT) {
+                    ctx.drawImage(bg, 0, screenY, CONFIG.WIDTH, bgHeight);
+                }
+                
+                currY -= bgHeight;
+                
+                // 너무 많이 그리는 것 방지
+                if(currY < this.cameraY - CONFIG.HEIGHT * 3) break;
+            }
+        }
+        
+        // === 2. bg_0 그리기 (맨 바닥에 한 번만) ===
+        const bg0 = this.loader.get('bg_0');
+        if(bg0) {
+            const bg0ScreenY = (bg0WorldY - bg0Height) - this.cameraY;
+            
+            // 화면에 보일 때만
+            if(bg0ScreenY > -bg0Height && bg0ScreenY < CONFIG.HEIGHT) {
+                ctx.drawImage(bg0, 0, bg0ScreenY, CONFIG.WIDTH, bg0Height);
+            }
+        }
+        
+        // === 3. 구간 전환 이미지 그리기 (각 구간 경계에 한 번씩) ===
+        for(let z = 1; z < ZONES.length; z++) {
+            const splitPoint = ZONES[z].start * 10;
+            const splitY = bg0WorldY - splitPoint;
+            const transScreenY = (splitY - transHeight) - this.cameraY;
+            
+            // 화면에 보일 때만
+            if(transScreenY > -transHeight && transScreenY < CONFIG.HEIGHT) {
+                const transImg = this.loader.get(`bg_${z}to${z + 1}`);
+                if(transImg) {
+                    ctx.drawImage(transImg, 0, transScreenY, CONFIG.WIDTH, transHeight);
+                }
+            }
+        }
+    }
+
+    drawPlayer() {
+        const ctx = this.ctx;
+        const p = this.player;
+        const screenY = p.y - this.cameraY;
+
+        ctx.save();
+        ctx.translate(p.x, screenY);
+        
+        if(!p.onHold) {
+            ctx.rotate(p.rotation * Math.PI / 180);
+        }
+
+        // 플레이어 이미지
+        let playerImg = null;
+        if(p.onHold) {
+            playerImg = p.facingLeft ? this.loader.get('player_left') : this.loader.get('player_right');
+        } else {
+            playerImg = p.facingLeft ? this.loader.get('player_left_jump') : this.loader.get('player_right_jump');
+        }
+
+        if(playerImg) {
+            ctx.drawImage(playerImg, -25, -25, 50, 50);
+        } else {
+            // Fallback
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(-25, -25, 50, 50);
+        }
+
+        // 화살표 (홀드에 매달렸을 때만)
+        if(p.onHold) {
+            const arrowImg = this.loader.get('arrow');
+            ctx.rotate(p.arrowAngle * Math.PI / 180);
+            
+            if(arrowImg) {
+                ctx.drawImage(arrowImg, -10, -70, 20, 40);
+            } else {
+                // Fallback
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.moveTo(-5, -40);
+                ctx.lineTo(0, -60);
+                ctx.lineTo(5, -40);
+                ctx.fill();
+            }
+        }
+
+        ctx.restore();
+    }
+
+    getHoldColor(type) {
+        switch(type) {
+            case 'breaking': return '#f44';
+            case 'ice': return '#9df';
+            case 'lava': return '#f80';
+            case 'magic': return '#a4f';
+            case 'trap': return '#444';
+            default: return '#853';
         }
     }
 
     loop() {
-        if (!this.gameRunning) return;
-
-        // 1. Update
-        this.player.update(this.holds, null, this.cameraY);
-        
-        // Generate more holds if needed
-        const highestHold = this.holds[this.holds.length - 1];
-        if (highestHold.y > this.cameraY - 100) {
-            this.spawnNextHold();
-        }
-
-        // Update Holds
-        this.holds.forEach(h => h.update(1, this.player.y));
-
-        // Camera Follow
-        const targetCamY = this.player.y - this.canvas.height / 2;
-        if (targetCamY < this.cameraY) {
-            this.cameraY = targetCamY; // Only scroll up
-        }
-
-        // Check Zone
-        let currentZoneIdx = 0;
-        for(let i=0; i<CONSTANTS.ZONES.length; i++) {
-            if (this.player.scoreDistance >= CONSTANTS.ZONES[i].start) currentZoneIdx = i;
-        }
-        
-        // Zone UI
-        const zoneTag = document.getElementById('zoneTag');
-        if (zoneTag.innerText !== CONSTANTS.ZONES[currentZoneIdx].name) {
-            zoneTag.innerText = CONSTANTS.ZONES[currentZoneIdx].name;
-            zoneTag.style.opacity = 1;
-            setTimeout(() => zoneTag.style.opacity = 0, 3000);
-        }
-
-        // Cleanup old holds
-        this.holds = this.holds.filter(h => h.y < this.cameraY + this.canvas.height + 200);
-
-        // HUD Update
-        document.querySelector('.hud-dist').innerText = `${this.player.scoreDistance}m`;
-        document.querySelector('.hud-gold').innerText = `${this.player.collectedGold} G`;
-
-        // Check Death
-        if (this.player.state === 'DEAD') {
-            this.gameOver();
-            return;
-        }
-
-        // 2. Draw
+        if(this.state !== 'PLAYING') return;
+        this.update();
         this.draw();
-
-        this.frameCount++;
         requestAnimationFrame(() => this.loop());
-    }
-
-    draw() {
-        // Clear background based on Zone
-        let bgCol = '#333';
-        for(let z of CONSTANTS.ZONES) {
-            if (this.player.scoreDistance >= z.start) bgCol = z.color;
-        }
-        
-        this.ctx.fillStyle = bgCol;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        this.ctx.save();
-        this.ctx.translate(0, -this.cameraY); // Apply Camera
-
-        // Draw Guide Lines (Walls)
-        this.ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        this.ctx.fillRect(0, this.cameraY, 10, this.canvas.height);
-        this.ctx.fillRect(this.canvas.width-10, this.cameraY, 10, this.canvas.height);
-
-        // Draw Holds
-        this.holds.forEach(hold => hold.draw(this.ctx));
-
-        // Draw Player
-        this.player.draw(this.ctx);
-
-        // Green Circle Indicator (if near hold)
-        if (this.player.state === 'JUMPING') {
-             for (let hold of this.holds) {
-                if (!hold.active) continue;
-                const dx = this.player.x - hold.x;
-                const dy = (this.player.y - 25) - hold.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                
-                if (dist < CONSTANTS.GAME.HOLD_GRAB_DIST + 20) { // Slightly larger visual range
-                    this.ctx.beginPath();
-                    this.ctx.arc(hold.x, hold.y, hold.radius + 10, 0, Math.PI * 2);
-                    this.ctx.strokeStyle = '#00FF00';
-                    this.ctx.lineWidth = 3;
-                    this.ctx.stroke();
-                }
-             }
-        }
-
-        this.ctx.restore();
-    }
-
-    gameOver() {
-        this.gameRunning = false;
-        
-        // Calculate Rewards
-        const distGold = Math.floor(this.player.scoreDistance / 10);
-        const totalGold = (distGold + this.player.collectedGold);
-        
-        // Save Data
-        this.userData.gold += totalGold;
-        if (this.player.scoreDistance > this.userData.bestDist) {
-            this.userData.bestDist = this.player.scoreDistance;
-        }
-        this.saveData();
-
-        // Update UI
-        document.getElementById('go-dist').innerText = this.player.scoreDistance;
-        document.getElementById('go-gold').innerText = `+${totalGold}`;
-        document.getElementById('go-best').innerText = this.userData.bestDist;
-        
-        setTimeout(() => {
-            this.showScreen('screen-gameover');
-            document.getElementById('hud').style.display = 'none';
-        }, 500);
-    }
-
-    // --- UI Helpers ---
-    showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        if (id) document.getElementById(id).classList.add('active');
-    }
-
-    updateMenuUI() {
-        document.getElementById('menu-username').innerText = this.user;
-        document.getElementById('menu-gold').innerText = `${this.userData.gold} G`;
-        document.getElementById('menu-best').innerText = `${this.userData.bestDist}m`;
-    }
-
-    openShop() {
-        this.renderShop();
-        this.showScreen('screen-shop');
-    }
-
-    renderShop() {
-        const grid = document.getElementById('shop-list');
-        grid.innerHTML = '';
-        document.getElementById('shop-gold').innerText = this.userData.gold;
-
-        Object.keys(SKINS).forEach(key => {
-            const skin = SKINS[key];
-            const unlocked = this.userData.skins.includes(key);
-            const selected = this.userData.currentSkin === key;
-
-            const card = document.createElement('div');
-            card.className = `skin-card ${!unlocked ? 'locked' : ''} ${selected ? 'selected' : ''}`;
-            
-            let btnHTML = '';
-            if (selected) {
-                btnHTML = '<div style="color:#0f0; font-weight:bold;">✓ 장착중</div>';
-            } else if (unlocked) {
-                btnHTML = `<button class="btn btn-secondary" style="padding:5px 10px; font-size:12px;" onclick="gameApp.equipSkin('${key}')">장착</button>`;
-            } else {
-                btnHTML = `<button class="btn btn-secondary" style="padding:5px 10px; font-size:12px; background:var(--primary); color:black;" onclick="gameApp.buySkin('${key}')">${skin.price} G</button>`;
-            }
-
-            card.innerHTML = `
-                <div class="skin-icon" style="color:${skin.color}">${skin.icon}</div>
-                <div class="skin-name">${skin.name}</div>
-                <div class="skin-desc">${skin.desc}</div>
-                <div style="margin-top:5px;">${btnHTML}</div>
-            `;
-            grid.appendChild(card);
-        });
-    }
-
-    buySkin(key) {
-        const skin = SKINS[key];
-        if (this.userData.gold >= skin.price) {
-            this.userData.gold -= skin.price;
-            this.userData.skins.push(key);
-            this.saveData();
-            this.renderShop();
-        } else {
-            alert('골드가 부족합니다!');
-        }
-    }
-
-    equipSkin(key) {
-        this.userData.currentSkin = key;
-        this.saveData();
-        this.renderShop();
     }
 }
 
-// Start App
-const gameApp = new GameApp();
-
+const game = new Game();
 </script>
 </body>
 </html>
