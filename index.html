@@ -564,8 +564,12 @@ class Game {
         }
 
         // 카메라 추적
-        let targetCam = p.y - CONFIG.HEIGHT * 0.6;
-        this.cameraY += (targetCam - this.cameraY) * 0.1;
+        const followLine = CONFIG.HEIGHT * 0.6;
+        const playerScreenY = p.y - this.cameraY;
+        if(playerScreenY < followLine) {
+            const targetCam = p.y - followLine;
+            this.cameraY += (targetCam - this.cameraY) * 0.1;
+        }
 
         // 홀드 업데이트
         this.holds.forEach(h => {
