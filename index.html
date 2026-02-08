@@ -85,6 +85,30 @@
         button:active {
             opacity: 0.8;
         }
+        .dev-panel {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .dev-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: var(--primary);
+            text-align: center;
+        }
+        .dev-controls label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+        .dev-controls input {
+            width: 120px;
+            padding: 6px 8px;
+            font-size: 14px;
+            margin: 0;
+        }
         #hud { 
             position: absolute; 
             top: 20px; 
@@ -125,6 +149,31 @@
         <p>최고 기록: <span id="best-dist">0</span>m</p>
         <button style="width: 220px;" onclick="game.start()">시작</button>
         <button style="width: 220px; background: #555; color: white;" onclick="game.logout()">로그아웃</button>
+        <div id="dev-panel" class="box dev-panel hidden">
+            <h3>Developer Mode</h3>
+            <div class="dev-controls">
+                <label>
+                    Gravity
+                    <input type="number" id="dev-gravity" step="0.1">
+                </label>
+                <label>
+                    Jump Speed
+                    <input type="number" id="dev-jump-speed" step="0.5">
+                </label>
+                <label>
+                    Grab Distance
+                    <input type="number" id="dev-grab-distance" step="1">
+                </label>
+                <label>
+                    Spawn Distance
+                    <input type="number" id="dev-spawn-distance" step="5">
+                </label>
+                <label>
+                    Arrow Range
+                    <input type="number" id="dev-arrow-range" step="1">
+                </label>
+            </div>
+        </div>
     </div>
 
     <div id="game-over" class="ui-layer hidden">
@@ -152,6 +201,7 @@ const CONFIG = {
     HOLD_GRAB_DISTANCE: 55,
     HOLD_SPAWN_DISTANCE: 180,
 };
+const DEV_ACCOUNTS = ['developer'];
 
 // 구간 정의
 const ZONES = [
@@ -223,6 +273,7 @@ class ImageLoader {
         this.load('hold_rockbug', 'hold/hold_rockbug.gif');
         this.load('hold_snowbug', 'hold/hold_snowbug.gif');
         this.load('hold_trap', 'hold/hold_trap.png');
+        this.load('hold_breaking', 'hold/hold_breaking.svg');
 
         // 플레이어
         this.load('player_left', 'player/player_left.gif');
@@ -264,6 +315,8 @@ class Game {
         this.effects = []; // 이펙트 파티클
         this.transitionAlpha = 0; // 구간 전환 효과
         this.currentZoneIndex = 0;
+        this.devMode = false;
+        this.devControlsBound = false;
 
         this.init();
         this.bindEvents();
@@ -319,6 +372,8 @@ class Game {
         document.getElementById('main-menu').className = 'ui-layer';
         document.getElementById('welcome-msg').innerText = `${this.user.name} 님, 안녕하세요!`;
         document.getElementById('best-dist').innerText = this.user.best;
+        this.devMode = this.isDeveloper();
+        this.toggleDevPanel();
     }
 
     start() {
@@ -366,6 +421,58 @@ class Game {
         
         for(let i = 0; i < 10; i++) this.spawnHold();
         this.loop();
+    }
+
+    isDeveloper() {
+        if(!this.user) return false;
+        return DEV_ACCOUNTS.includes(this.user.name);
+    }
+
+    toggleDevPanel() {
+        const panel = document.getElementById('dev-panel');
+        if(!panel) return;
+        if(this.devMode) {
+            panel.classList.remove('hidden');
+            this.syncDevControls();
+            if(!this.devControlsBound) {
+                this.bindDevControls();
+                this.devControlsBound = true;
+            }
+        } else {
+            panel.classList.add('hidden');
+        }
+    }
+
+    syncDevControls() {
+        const mappings = [
+            ['dev-gravity', CONFIG.GRAVITY],
+            ['dev-jump-speed', CONFIG.JUMP_SPEED],
+            ['dev-grab-distance', CONFIG.HOLD_GRAB_DISTANCE],
+            ['dev-spawn-distance', CONFIG.HOLD_SPAWN_DISTANCE],
+            ['dev-arrow-range', CONFIG.ARROW_ANGLE_RANGE],
+        ];
+        mappings.forEach(([id, value]) => {
+            const input = document.getElementById(id);
+            if(input) input.value = value;
+        });
+    }
+
+    bindDevControls() {
+        const updateNumber = (id, updater) => {
+            const input = document.getElementById(id);
+            if(!input) return;
+            input.addEventListener('input', () => {
+                const value = parseFloat(input.value);
+                if(!Number.isFinite(value)) return;
+                updater(value);
+            });
+        };
+
+        updateNumber('dev-gravity', value => { CONFIG.GRAVITY = value; });
+        updateNumber('dev-jump-speed', value => { CONFIG.JUMP_SPEED = value; });
+        updateNumber('dev-grab-distance', value => { CONFIG.HOLD_GRAB_DISTANCE = value; });
+        updateNumber('dev-spawn-distance', value => { CONFIG.HOLD_SPAWN_DISTANCE = value; });
+        updateNumber('dev-arrow-range', value => { CONFIG.ARROW_ANGLE_RANGE = value; });
     }
 
     handleInput() {
@@ -564,8 +671,12 @@ class Game {
         }
 
         // 카메라 추적
-        let targetCam = p.y - CONFIG.HEIGHT * 0.6;
-        this.cameraY += (targetCam - this.cameraY) * 0.1;
+        const followLine = CONFIG.HEIGHT * 0.6;
+        const playerScreenY = p.y - this.cameraY;
+        if(playerScreenY < followLine) {
+            const targetCam = p.y - followLine;
+            this.cameraY += (targetCam - this.cameraY) * 0.1;
+        }
 
         // 홀드 업데이트
         this.holds.forEach(h => {
@@ -743,6 +854,7 @@ class Game {
             else if(h.type === 'lava') img = this.loader.get('hold_lava');
             else if(h.type === 'magic') img = this.loader.get('hold_magic');
             else if(h.type === 'trap') img = this.loader.get('hold_trap');
+            else if(h.type === 'breaking') img = this.loader.get('hold_breaking');
             else if(h.type === 'rock_bug' || h.type === 'rock_bug_v') img = this.loader.get('hold_rockbug');
             else if(h.type === 'snow_bug') img = this.loader.get('hold_snowbug');
             else if(h.type === 'lava_bug') img = this.loader.get('hold_lavabug');
