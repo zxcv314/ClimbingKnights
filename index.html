@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Climbing Knights</title>
+    <title>Climbing Knights - Dev Mode</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Noto+Sans+KR:wght@400;700&display=swap');
         :root { 
             --primary: #FFD700; 
             --danger: #FF4444; 
             --ui-bg: rgba(0, 0, 0, 0.9); 
+            --dev-bg: rgba(0, 100, 255, 0.95);
         }
         body { 
             margin: 0; 
@@ -23,13 +24,19 @@
             height: 100vh; 
             touch-action: none; 
         }
+        #main-wrapper {
+            display: flex;
+            gap: 0;
+            height: 100vh;
+            align-items: center;
+        }
         #game-container { 
             position: relative; 
-            width: 100%; 
-            max-width: 480px; 
+            width: 480px; 
             height: 100%; 
             background: #222; 
             overflow: hidden; 
+            flex-shrink: 0;
         }
         canvas { 
             display: block; 
@@ -48,6 +55,7 @@
             align-items: center; 
             background: var(--ui-bg); 
             z-index: 10; 
+            overflow-y: auto;
         }
         .hidden { 
             display: none !important; 
@@ -85,30 +93,6 @@
         button:active {
             opacity: 0.8;
         }
-        .dev-panel {
-            margin-top: 20px;
-            text-align: left;
-        }
-        .dev-panel h3 {
-            margin: 0 0 10px 0;
-            font-size: 16px;
-            color: var(--primary);
-            text-align: center;
-        }
-        .dev-controls label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            margin: 8px 0;
-        }
-        .dev-controls input {
-            width: 120px;
-            padding: 6px 8px;
-            font-size: 14px;
-            margin: 0;
-        }
         #hud { 
             position: absolute; 
             top: 20px; 
@@ -124,21 +108,179 @@
             color: var(--primary);
             margin-top: 5px;
         }
+        
+        /* 개발자 패널 스타일 */
+        #dev-panel {
+            width: 320px;
+            max-height: 100vh;
+            background: var(--dev-bg);
+            border-left: 2px solid #00f;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        #dev-panel.minimized {
+            width: 60px;
+            overflow: hidden;
+        }
+        
+        #dev-panel.minimized #dev-panel-content {
+            display: none;
+        }
+        
+        #dev-panel.minimized h3 {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            margin: 0;
+        }
+        
+        @media (max-width: 800px) {
+            #dev-panel {
+                position: fixed;
+                right: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 30;
+                width: 280px;
+            }
+            #dev-panel.minimized {
+                width: 40px;
+            }
+        }
+        
+        #dev-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            white-space: nowrap;
+        }
+        
+        #dev-panel.minimized h3 {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 12px;
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            height: 150px;
+            margin: auto;
+        }
+        
+        #dev-panel.minimized .toggle-btn {
+            writing-mode: horizontal-tb;
+        }
+        
+        .dev-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+        
+        .dev-section h4 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: #0ff;
+        }
+        
+        .dev-control {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .dev-control label {
+            flex: 1;
+            font-size: 11px;
+        }
+        
+        .dev-control input[type="number"],
+        .dev-control input[type="range"] {
+            width: 100px;
+            padding: 3px;
+            font-size: 11px;
+        }
+        
+        .dev-control input[type="range"] {
+            width: 120px;
+        }
+        
+        .dev-control .value-display {
+            width: 50px;
+            text-align: right;
+            font-weight: bold;
+            color: #0f0;
+        }
+        
+        .dev-button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: #0080ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .dev-button:hover {
+            background: #0060cc;
+        }
+        
+        .dev-button.danger {
+            background: #ff4444;
+        }
+        
+        .dev-button.danger:hover {
+            background: #cc0000;
+        }
+        
+        .toggle-btn {
+            padding: 2px 8px;
+            background: #444;
+            border: none;
+            border-radius: 3px;
+            color: white;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        
+        #dev-mode-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--dev-bg);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 6;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
+<div id="main-wrapper">
 <div id="game-container">
     <div id="hud" class="hidden">
         <div id="dist-txt">0m</div>
         <div id="zone-txt">BASIC ZONE</div>
     </div>
+    
+    <div id="dev-mode-badge" class="hidden">🔧 DEV MODE</div>
 
     <div id="login-screen" class="ui-layer">
         <h1 style="font-family: 'Black Ops One'; color: var(--primary); font-size: 40px; margin-bottom: 5px;">CLIMBING KNIGHTS</h1>
-        <p style="margin-bottom: 20px; color: #aaa;">원터치 등반 게임</p>
+        <p style="margin-bottom: 20px; color: #aaa;">마왕성 탑을 올라라</p>
         <div class="box">
-            <input type="text" id="username" placeholder="유저명">
+            <input type="text" id="username" placeholder="유저명 (dev 입력 시 개발자 모드)">
             <input type="password" id="password" placeholder="비밀번호">
             <button onclick="game.login()">Login</button>
         </div>
@@ -147,49 +289,137 @@
     <div id="main-menu" class="ui-layer hidden">
         <h2 id="welcome-msg" style="color: var(--primary);">님, 안녕하세요!</h2>
         <p>최고 기록: <span id="best-dist">0</span>m</p>
-        <button style="width: 220px;" onclick="game.start()">시작</button>
+        <button style="width: 220px;" onclick="game.start()">스토리 모드 시작</button>
         <button style="width: 220px; background: #555; color: white;" onclick="game.logout()">로그아웃</button>
-        <div id="dev-panel" class="box dev-panel hidden">
-            <h3>Developer Mode</h3>
-            <div class="dev-controls">
-                <label>
-                    Gravity
-                    <input type="number" id="dev-gravity" step="0.1">
-                </label>
-                <label>
-                    Jump Speed
-                    <input type="number" id="dev-jump-speed" step="0.5">
-                </label>
-                <label>
-                    Grab Distance
-                    <input type="number" id="dev-grab-distance" step="1">
-                </label>
-                <label>
-                    Spawn Distance
-                    <input type="number" id="dev-spawn-distance" step="5">
-                </label>
-                <label>
-                    Arrow Range
-                    <input type="number" id="dev-arrow-range" step="1">
-                </label>
-            </div>
-        </div>
     </div>
 
     <div id="game-over" class="ui-layer hidden">
-        <h1 id="over-title" style="color: var(--danger); font-size: 40px;">Game Over</h1>
+        <h1 id="over-title" style="color: var(--danger); font-size: 40px;">원정 실패</h1>
         <p id="over-stats"></p>
-        <button style="width: 200px;" onclick="game.start()">Retry</button>
+        <button style="width: 200px;" onclick="game.start()">재도전</button>
         <button style="width: 200px; background: #555; color: white;" onclick="game.showMenu()">메뉴로</button>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 </div>
+    
+    <!-- 개발자 패널 - 게임 컨테이너 밖 -->
+    <div id="dev-panel" class="hidden">
+        <h3>
+            개발자 패널
+            <button class="toggle-btn" onclick="game.toggleDevPanel()">▶</button>
+        </h3>
+        
+        <div id="dev-panel-content">
+            <div class="dev-section">
+                <h4>⚙️ 물리 설정</h4>
+                <div class="dev-control">
+                    <label>중력 (GRAVITY)</label>
+                    <input type="range" min="0" max="1" step="0.05" value="0.35" 
+                           oninput="game.updateConfig('GRAVITY', this.value)">
+                    <span class="value-display" id="val-GRAVITY">0.35</span>
+                </div>
+                <div class="dev-control">
+                    <label>점프 속도 (JUMP_SPEED)</label>
+                    <input type="range" min="10" max="30" step="1" value="16" 
+                           oninput="game.updateConfig('JUMP_SPEED', this.value)">
+                    <span class="value-display" id="val-JUMP_SPEED">16</span>
+                </div>
+            </div>
+            
+            <div class="dev-section">
+                <h4>🎯 게임플레이</h4>
+                <div class="dev-control">
+                    <label>화살표 각도 (°)</label>
+                    <input type="range" min="30" max="90" step="5" value="60" 
+                           oninput="game.updateConfig('ARROW_ANGLE_RANGE', this.value)">
+                    <span class="value-display" id="val-ARROW_ANGLE_RANGE">60</span>
+                </div>
+                <div class="dev-control">
+                    <label>잡기 거리</label>
+                    <input type="range" min="30" max="100" step="5" value="55" 
+                           oninput="game.updateConfig('HOLD_GRAB_DISTANCE', this.value)">
+                    <span class="value-display" id="val-HOLD_GRAB_DISTANCE">55</span>
+                </div>
+                <div class="dev-control">
+                    <label>홀드 생성 거리</label>
+                    <input type="range" min="100" max="300" step="10" value="180" 
+                           oninput="game.updateConfig('HOLD_SPAWN_DISTANCE', this.value)">
+                    <span class="value-display" id="val-HOLD_SPAWN_DISTANCE">180</span>
+                </div>
+            </div>
+            
+            <div class="dev-section">
+                <h4>🎲 확률 조정</h4>
+                <div class="dev-control">
+                    <label>특수 홀드 확률 (%)</label>
+                    <input type="range" min="0" max="100" step="5" value="30" 
+                           oninput="game.updateConfig('SPECIAL_HOLD_CHANCE', this.value)">
+                    <span class="value-display" id="val-SPECIAL_HOLD_CHANCE">30</span>
+                </div>
+                <div class="dev-control">
+                    <label>부서지는 홀드 (%)</label>
+                    <input type="range" min="0" max="50" step="5" value="15" 
+                           oninput="game.updateConfig('BREAKING_HOLD_CHANCE', this.value)">
+                    <span class="value-display" id="val-BREAKING_HOLD_CHANCE">15</span>
+                </div>
+            </div>
+            
+            <div class="dev-section">
+                <h4>⏱️ 타이밍</h4>
+                <div class="dev-control">
+                    <label>부서지는 홀드 시간 (프레임)</label>
+                    <input type="range" min="30" max="300" step="30" value="120" 
+                           oninput="game.updateConfig('BREAKING_HOLD_DURATION', this.value)">
+                    <span class="value-display" id="val-BREAKING_HOLD_DURATION">120</span>
+                </div>
+                <div class="dev-control">
+                    <label>바위 생성 주기</label>
+                    <input type="range" min="60" max="300" step="30" value="120" 
+                           oninput="game.updateConfig('ROCK_SPAWN_INTERVAL', this.value)">
+                    <span class="value-display" id="val-ROCK_SPAWN_INTERVAL">120</span>
+                </div>
+                <div class="dev-control">
+                    <label>용암 생성 주기</label>
+                    <input type="range" min="50" max="200" step="10" value="100" 
+                           oninput="game.updateConfig('LAVA_SPAWN_INTERVAL', this.value)">
+                    <span class="value-display" id="val-LAVA_SPAWN_INTERVAL">100</span>
+                </div>
+            </div>
+            
+            <div class="dev-section">
+                <h4>🚀 치트</h4>
+                <button class="dev-button" onclick="game.devTeleport(2000)">바위 구간으로 워프</button>
+                <button class="dev-button" onclick="game.devTeleport(4000)">설산 구간으로 워프</button>
+                <button class="dev-button" onclick="game.devTeleport(6000)">용암 구간으로 워프</button>
+                <button class="dev-button" onclick="game.devTeleport(8000)">마왕성으로 워프</button>
+                <button class="dev-button" onclick="game.devTeleport(9900)">거의 클리어</button>
+                <button class="dev-button" onclick="game.devGodMode()">무적 모드 토글</button>
+                <button class="dev-button danger" onclick="game.devClearProgress()">진행도 초기화</button>
+            </div>
+            
+            <div class="dev-section">
+                <h4>📊 디버그 정보</h4>
+                <div style="font-size: 11px; line-height: 1.5;">
+                    <div>거리: <span id="debug-distance">0</span>m</div>
+                    <div>홀드 수: <span id="debug-holds">0</span></div>
+                    <div>장애물: <span id="debug-obstacles">0</span></div>
+                    <div>FPS: <span id="debug-fps">60</span></div>
+                    <div>카메라Y: <span id="debug-camera">0</span></div>
+                    <div>무적: <span id="debug-godmode">OFF</span></div>
+                </div>
+            </div>
+            
+            <button class="dev-button" onclick="game.devReset()">설정 초기화</button>
+        </div>
+    </div>
+</div>
+
+</div>
 
 <script>
 /**
- * Climbing Knights - Complete Implementation
- * 기획서 기반 전체 구현
+ * Climbing Knights - Developer Mode
  */
 
 const CONFIG = {
@@ -197,13 +427,18 @@ const CONFIG = {
     HEIGHT: 854,
     GRAVITY: 0.35, 
     JUMP_SPEED: 16,
-    ARROW_ANGLE_RANGE: 60, // ±60도 = 120도 범위
+    ARROW_ANGLE_RANGE: 60,
     HOLD_GRAB_DISTANCE: 55,
     HOLD_SPAWN_DISTANCE: 180,
+    SPECIAL_HOLD_CHANCE: 30,
+    BREAKING_HOLD_CHANCE: 15,
+    BREAKING_HOLD_DURATION: 120,
+    ROCK_SPAWN_INTERVAL: 120,
+    LAVA_SPAWN_INTERVAL: 100,
 };
-const DEV_ACCOUNTS = ['developer'];
 
-// 구간 정의
+const DEFAULT_CONFIG = {...CONFIG};
+
 const ZONES = [
     { name: 'BASIC', start: 0, end: 2000, bgIndex: 0 },
     { name: 'ROCK', start: 2000, end: 4000, bgIndex: 1 },
@@ -236,7 +471,6 @@ class ImageLoader {
     }
 
     loadAll() {
-        // 배경
         for(let i = 0; i <= 5; i++) {
             this.load(`bg_${i}`, `background/background_${i}.png`);
         }
@@ -246,7 +480,6 @@ class ImageLoader {
         this.load('bg_4to5', 'background/background_4_to_5.png');
         this.load('tower', 'background/demonkingstower.gif');
 
-        // 이펙트
         this.load('arrow', 'effect/effect_arrow.png');
         this.load('beforegoblin', 'effect/effect_beforegoblin.png');
         this.load('goblin', 'effect/effect_goblin.png');
@@ -259,7 +492,6 @@ class ImageLoader {
         this.load('rock_sign', 'effect/effect_rock_sign.png');
         this.load('wind', 'effect/effect_wind.png');
 
-        // 홀드
         this.load('hold_basic', 'hold/hold_basic.png');
         this.load('hold_ice', 'hold/hold_ice.png');
         this.load('hold_lava', 'hold/hold_lava.png');
@@ -273,9 +505,7 @@ class ImageLoader {
         this.load('hold_rockbug', 'hold/hold_rockbug.gif');
         this.load('hold_snowbug', 'hold/hold_snowbug.gif');
         this.load('hold_trap', 'hold/hold_trap.png');
-        this.load('hold_breaking', 'hold/hold_breaking.svg');
 
-        // 플레이어
         this.load('player_left', 'player/player_left.gif');
         this.load('player_left_jump', 'player/player_left_jump.gif');
         this.load('player_right', 'player/player_right.gif');
@@ -312,11 +542,16 @@ class Game {
         this.lavas = [];
         this.timer = 0;
         this.wind = { active: false, direction: 0, timer: 0 };
-        this.effects = []; // 이펙트 파티클
-        this.transitionAlpha = 0; // 구간 전환 효과
+        this.effects = [];
+        this.transitionAlpha = 0;
         this.currentZoneIndex = 0;
+        
+        // 개발자 모드
         this.devMode = false;
-        this.devControlsBound = false;
+        this.godMode = false;
+        this.lastFrameTime = Date.now();
+        this.fps = 60;
+        this.devPanelMinimized = false;
 
         this.init();
         this.bindEvents();
@@ -325,8 +560,12 @@ class Game {
     init() {
         const saved = localStorage.getItem('ck_logged_in');
         if (saved) {
-            this.user = JSON.parse(localStorage.getItem(`ck_user_${saved}`));
-            this.showMenu();
+            const userData = JSON.parse(localStorage.getItem(`ck_user_${saved}`));
+            if (userData) {
+                this.user = userData;
+                this.devMode = (saved === 'dev');
+                this.showMenu();
+            }
         }
     }
 
@@ -346,11 +585,14 @@ class Game {
         let data = localStorage.getItem(`ck_user_${name}`);
         if(data) {
             data = JSON.parse(data);
-            if(data.pass !== pass) return alert("비밀번호가 틀렸습니다.");
+            if(data.pass !== pass) return alert("비밀번호 틀림!");
             this.user = data;
         } else {
             this.user = { name, pass, best: 0 };
         }
+        
+        this.devMode = (name === 'dev');
+        
         localStorage.setItem('ck_logged_in', name);
         this.save();
         this.showMenu();
@@ -370,10 +612,13 @@ class Game {
         document.getElementById('login-screen').className = 'ui-layer hidden';
         document.getElementById('game-over').className = 'ui-layer hidden';
         document.getElementById('main-menu').className = 'ui-layer';
-        document.getElementById('welcome-msg').innerText = `${this.user.name} 님, 안녕하세요!`;
+        document.getElementById('welcome-msg').innerText = `${this.user.name} 기사, 준비되었나?`;
         document.getElementById('best-dist').innerText = this.user.best;
-        this.devMode = this.isDeveloper();
-        this.toggleDevPanel();
+        
+        if(this.devMode) {
+            document.getElementById('dev-panel').className = '';
+            document.getElementById('dev-mode-badge').className = '';
+        }
     }
 
     start() {
@@ -410,7 +655,7 @@ class Game {
 
         this.holds = [{ 
             x: CONFIG.WIDTH/2, 
-            y: CONFIG.HEIGHT - 80, 
+            y: CONFIG.HEIGHT - 60, 
             type: 'normal', 
             active: true,
             timer: 0,
@@ -423,63 +668,10 @@ class Game {
         this.loop();
     }
 
-    isDeveloper() {
-        if(!this.user) return false;
-        return DEV_ACCOUNTS.includes(this.user.name);
-    }
-
-    toggleDevPanel() {
-        const panel = document.getElementById('dev-panel');
-        if(!panel) return;
-        if(this.devMode) {
-            panel.classList.remove('hidden');
-            this.syncDevControls();
-            if(!this.devControlsBound) {
-                this.bindDevControls();
-                this.devControlsBound = true;
-            }
-        } else {
-            panel.classList.add('hidden');
-        }
-    }
-
-    syncDevControls() {
-        const mappings = [
-            ['dev-gravity', CONFIG.GRAVITY],
-            ['dev-jump-speed', CONFIG.JUMP_SPEED],
-            ['dev-grab-distance', CONFIG.HOLD_GRAB_DISTANCE],
-            ['dev-spawn-distance', CONFIG.HOLD_SPAWN_DISTANCE],
-            ['dev-arrow-range', CONFIG.ARROW_ANGLE_RANGE],
-        ];
-        mappings.forEach(([id, value]) => {
-            const input = document.getElementById(id);
-            if(input) input.value = value;
-        });
-    }
-
-    bindDevControls() {
-        const updateNumber = (id, updater) => {
-            const input = document.getElementById(id);
-            if(!input) return;
-            input.addEventListener('input', () => {
-                const value = parseFloat(input.value);
-                if(!Number.isFinite(value)) return;
-                updater(value);
-            });
-        };
-
-        updateNumber('dev-gravity', value => { CONFIG.GRAVITY = value; });
-        updateNumber('dev-jump-speed', value => { CONFIG.JUMP_SPEED = value; });
-        updateNumber('dev-grab-distance', value => { CONFIG.HOLD_GRAB_DISTANCE = value; });
-        updateNumber('dev-spawn-distance', value => { CONFIG.HOLD_SPAWN_DISTANCE = value; });
-        updateNumber('dev-arrow-range', value => { CONFIG.ARROW_ANGLE_RANGE = value; });
-    }
-
     handleInput() {
         if(this.state !== 'PLAYING') return;
         
         if(this.player.onHold) {
-            // 점프
             const rad = (this.player.arrowAngle - 90) * Math.PI / 180;
             this.player.vx = CONFIG.JUMP_SPEED * Math.cos(rad);
             this.player.vy = CONFIG.JUMP_SPEED * Math.sin(rad);
@@ -490,7 +682,6 @@ class Game {
             
             setTimeout(() => this.player.grabReady = true, 150);
         } else {
-            // 잡기 시도
             const target = this.holds.find(h => {
                 const d = Math.hypot(this.player.x - h.x, this.player.y - h.y);
                 return h.active && d < CONFIG.HOLD_GRAB_DISTANCE && this.player.grabReady;
@@ -503,15 +694,13 @@ class Game {
                 this.player.isJumping = false;
                 this.player.rotation = 0;
                 
-                // 홀드 타입별 처리
                 if(target.type === 'breaking') {
-                    target.timer = 120; // 2초
+                    target.timer = CONFIG.BREAKING_HOLD_DURATION;
                 }
                 if(target.type === 'trap') {
                     this.spawnGoblin(target);
                 }
                 
-                // 캐치 이펙트
                 const zoneIdx = this.getZoneIndex();
                 this.addEffect(target.x, target.y, `catch_${zoneIdx + 1}`, 30);
             }
@@ -525,7 +714,6 @@ class Game {
         let newY = last.y - (CONFIG.HOLD_SPAWN_DISTANCE + Math.random() * 80);
         let newX;
         
-        // x좌표는 이전 홀드와 반대편에 생성
         if(last.x < CONFIG.WIDTH / 2) {
             newX = CONFIG.WIDTH / 2 + Math.random() * (CONFIG.WIDTH / 2 - 60);
         } else {
@@ -547,36 +735,37 @@ class Game {
     }
 
     getHoldType(zone) {
-        const rand = Math.random();
+        const rand = Math.random() * 100;
+        const specialChance = CONFIG.SPECIAL_HOLD_CHANCE;
+        const breakingChance = CONFIG.BREAKING_HOLD_CHANCE;
         
         if(zone === 'BASIC') {
-            if(rand < 0.15) return 'breaking';
+            if(rand < breakingChance) return 'breaking';
             return 'normal';
         } else if(zone === 'ROCK') {
-            if(rand < 0.3) return 'rock_bug';
-            if(rand < 0.5) return 'rock_bug_v';
-            if(rand < 0.65) return 'breaking';
+            if(rand < specialChance * 0.6) return 'rock_bug';
+            if(rand < specialChance) return 'rock_bug_v';
+            if(rand < specialChance + breakingChance) return 'breaking';
             return 'normal';
         } else if(zone === 'SNOW') {
-            if(rand < 0.25) return 'snow_bug';
-            if(rand < 0.45) return 'ice';
-            if(rand < 0.6) return 'breaking';
+            if(rand < specialChance * 0.5) return 'snow_bug';
+            if(rand < specialChance) return 'ice';
+            if(rand < specialChance + breakingChance) return 'breaking';
             return 'normal';
         } else if(zone === 'LAVA') {
-            if(rand < 0.25) return 'lava_bug';
-            if(rand < 0.45) return 'lava';
-            if(rand < 0.6) return 'breaking';
+            if(rand < specialChance * 0.5) return 'lava_bug';
+            if(rand < specialChance) return 'lava';
+            if(rand < specialChance + breakingChance) return 'breaking';
             return 'normal';
-        } else { // CASTLE
-            if(rand < 0.2) return 'magic';
-            if(rand < 0.35) return 'trap';
-            if(rand < 0.5) return 'breaking';
+        } else {
+            if(rand < specialChance * 0.4) return 'magic';
+            if(rand < specialChance * 0.7) return 'trap';
+            if(rand < specialChance) return 'breaking';
             return 'normal';
         }
     }
 
     spawnGoblin(hold) {
-        // 트랩 홀드를 밟으면 2초 후 고블린 출현
         this.addEffect(hold.x, hold.y - 50, 'beforegoblin', 120);
         
         setTimeout(() => {
@@ -618,18 +807,16 @@ class Game {
         this.timer++;
         const p = this.player;
 
-        // 구간 전환 체크
         const newZoneIdx = this.getZoneIndex();
         if(newZoneIdx !== this.currentZoneIndex) {
             this.currentZoneIndex = newZoneIdx;
-            this.transitionAlpha = 1.0; // 전환 효과 시작
+            this.transitionAlpha = 1.0;
         }
         if(this.transitionAlpha > 0) {
             this.transitionAlpha -= 0.02;
         }
 
         if(p.onHold) {
-            // 홀드에 매달려 있을 때
             p.x = p.onHold.x;
             p.y = p.onHold.y;
             p.arrowAngle += 2 * p.arrowDir;
@@ -637,7 +824,6 @@ class Game {
                 p.arrowDir *= -1;
             }
             
-            // 부서지는 홀드
             if(p.onHold.type === 'breaking' && p.onHold.timer > 0) {
                 p.onHold.timer--;
                 if(p.onHold.timer <= 0) { 
@@ -646,15 +832,12 @@ class Game {
                 }
             }
             
-            // 얼음 홀드 (미끄러짐)
             if(p.onHold.type === 'ice') {
                 p.onHold.y += 1.5;
             }
         } else {
-            // 공중에 있을 때
             p.vy += CONFIG.GRAVITY;
             
-            // 바람 영향 (설산 구간)
             if(this.wind.active) {
                 p.vx += this.wind.direction * 0.3;
             }
@@ -663,24 +846,21 @@ class Game {
             p.y += p.vy;
             p.rotation += p.vx > 0 ? 5 : -5;
             
-            // 벽 충돌 (튕김)
             if(p.x < p.radius || p.x > CONFIG.WIDTH - p.radius) {
                 p.vx *= -0.6;
                 p.x = p.x < p.radius ? p.radius : CONFIG.WIDTH - p.radius;
             }
         }
 
-        // 카메라 추적
         const followLine = CONFIG.HEIGHT * 0.6;
         const playerScreenY = p.y - this.cameraY;
-        if(playerScreenY < followLine) {
-            const targetCam = p.y - followLine;
-            this.cameraY += (targetCam - this.cameraY) * 0.1;
+
+        if (playerScreenY < followLine) {
+            const target = p.y - followLine;
+            this.cameraY += (target - this.cameraY) * 0.1;
         }
 
-        // 홀드 업데이트
         this.holds.forEach(h => {
-            // 움직이는 홀드들
             if(h.type === 'rock_bug') {
                 h.x = h.originX + Math.sin(this.timer * 0.05) * 100;
             }
@@ -695,12 +875,10 @@ class Game {
                 h.y = h.originY + Math.sin(this.timer * 0.1) * 80;
             }
             
-            // 깜빡이는 용암 홀드 (4초 보임, 2초 안보임)
             if(h.type === 'lava') {
                 h.active = (this.timer % 360 < 240);
             }
             
-            // 순간이동 마법 홀드
             if(h.type === 'magic') {
                 if(this.timer % 90 === 0) {
                     h.x = h.originX + (Math.random() - 0.5) * 200;
@@ -709,11 +887,9 @@ class Game {
             }
         });
 
-        // 구간별 장애물
         const zone = this.getZone();
         
-        // 암석 지대: 돌 낙하
-        if(zone === 'ROCK' && this.timer % 120 === 0) {
+        if(zone === 'ROCK' && this.timer % CONFIG.ROCK_SPAWN_INTERVAL === 0) {
             const rockX = Math.random() * CONFIG.WIDTH;
             this.rocks.push({ 
                 x: rockX, 
@@ -724,29 +900,27 @@ class Game {
         }
         this.rocks.forEach(r => {
             r.y += r.vy;
-            if(Math.hypot(p.x - r.x, p.y - r.y) < p.radius + 20) {
+            if(!this.godMode && Math.hypot(p.x - r.x, p.y - r.y) < p.radius + 20) {
                 this.die();
             }
         });
 
-        // 설산 지대: 바람
         if(zone === 'SNOW') {
             this.wind.timer--;
             if(this.wind.timer <= 0) {
                 this.wind.active = !this.wind.active;
                 if(this.wind.active) {
                     this.wind.direction = Math.random() < 0.5 ? -1 : 1;
-                    this.wind.timer = 180; // 3초
+                    this.wind.timer = 180;
                 } else {
-                    this.wind.timer = 120; // 2초
+                    this.wind.timer = 120;
                 }
             }
         } else {
             this.wind.active = false;
         }
 
-        // 용암 지대: 용암 낙하
-        if(zone === 'LAVA' && this.timer % 100 === 0) {
+        if(zone === 'LAVA' && this.timer % CONFIG.LAVA_SPAWN_INTERVAL === 0) {
             const lavaX = Math.random() * CONFIG.WIDTH;
             this.lavas.push({ 
                 x: lavaX, 
@@ -757,41 +931,41 @@ class Game {
         }
         this.lavas.forEach(lava => {
             lava.y += lava.vy;
-            if(Math.hypot(p.x - lava.x, p.y - lava.y) < p.radius + 25) {
+            if(!this.godMode && Math.hypot(p.x - lava.x, p.y - lava.y) < p.radius + 25) {
                 this.die();
             }
         });
 
-        // 고블린 (마왕성 구간 및 트랩)
         this.goblins.forEach(g => {
             g.y += g.vy;
-            if(Math.hypot(p.x - g.x, p.y - g.y) < p.radius + 25) {
+            if(!this.godMode && Math.hypot(p.x - g.x, p.y - g.y) < p.radius + 25) {
                 this.die();
             }
         });
 
-        // 이펙트 업데이트
         this.effects = this.effects.filter(e => {
             e.timer++;
             return e.timer < e.duration;
         });
 
-        // 거리 갱신
         this.distance = Math.max(this.distance, Math.floor((CONFIG.HEIGHT - 120 - p.y) / 10));
         document.getElementById('dist-txt').innerText = this.distance + "m";
         document.getElementById('zone-txt').innerText = this.getZone() + " ZONE";
 
-        // 홀드 생성
         if(this.holds[this.holds.length - 1].y > p.y - 1000) {
             this.spawnHold();
         }
 
-        // 게임 종료 조건
-        if(p.y > this.cameraY + CONFIG.HEIGHT + 100) {
+        if(!this.godMode && p.y > this.cameraY + CONFIG.HEIGHT + 100) {
             this.die();
         }
         if(this.distance >= 10000) {
             this.win();
+        }
+        
+        // 개발자 정보 업데이트
+        if(this.devMode) {
+            this.updateDevInfo();
         }
     }
 
@@ -823,14 +997,11 @@ class Game {
         const ctx = this.ctx;
         ctx.clearRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
 
-        // 배경 그리기
         this.drawBackground();
 
-        // 바람 이펙트
         if(this.wind.active) {
             const windImg = this.loader.get('wind');
             if(windImg) {
-                const windX = this.wind.direction > 0 ? 0 : CONFIG.WIDTH;
                 ctx.save();
                 ctx.globalAlpha = 0.5;
                 if(this.wind.direction < 0) {
@@ -842,7 +1013,6 @@ class Game {
             }
         }
 
-        // 홀드 그리기
         this.holds.forEach(h => {
             if(!h.active) return;
             
@@ -854,7 +1024,6 @@ class Game {
             else if(h.type === 'lava') img = this.loader.get('hold_lava');
             else if(h.type === 'magic') img = this.loader.get('hold_magic');
             else if(h.type === 'trap') img = this.loader.get('hold_trap');
-            else if(h.type === 'breaking') img = this.loader.get('hold_breaking');
             else if(h.type === 'rock_bug' || h.type === 'rock_bug_v') img = this.loader.get('hold_rockbug');
             else if(h.type === 'snow_bug') img = this.loader.get('hold_snowbug');
             else if(h.type === 'lava_bug') img = this.loader.get('hold_lavabug');
@@ -863,7 +1032,6 @@ class Game {
                 const size = h.type === 'ice' ? 180 : 60;
                 ctx.drawImage(img, h.x - size/2, screenY - size/2, size, size);
             } else {
-                // Fallback
                 ctx.fillStyle = this.getHoldColor(h.type);
                 ctx.beginPath();
                 if(h.type === 'ice') {
@@ -874,7 +1042,6 @@ class Game {
                 ctx.fill();
             }
             
-            // 잡기 가능 표시
             if(!this.player.onHold && this.player.grabReady) {
                 const d = Math.hypot(this.player.x - h.x, this.player.y - h.y);
                 if(d < CONFIG.HOLD_GRAB_DISTANCE) {
@@ -886,7 +1053,6 @@ class Game {
                 }
             }
             
-            // 부서지는 홀드 타이머 표시
             if(h.type === 'breaking' && h.timer > 0) {
                 ctx.fillStyle = '#f44';
                 ctx.font = '14px Arial';
@@ -895,7 +1061,6 @@ class Game {
             }
         });
 
-        // 장애물 그리기
         this.rocks.forEach(r => {
             const img = this.loader.get('rock_effect');
             if(img) {
@@ -932,7 +1097,6 @@ class Game {
             }
         });
 
-        // 이펙트 그리기
         this.effects.forEach(e => {
             const img = this.loader.get(e.imageKey);
             if(img) {
@@ -943,14 +1107,21 @@ class Game {
             }
         });
 
-        // 플레이어 그리기
         this.drawPlayer();
 
-        // 구간 전환 효과
         if(this.transitionAlpha > 0) {
             ctx.save();
             ctx.globalAlpha = this.transitionAlpha;
             ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+            ctx.restore();
+        }
+        
+        // 무적 모드 표시
+        if(this.godMode) {
+            ctx.save();
+            ctx.globalAlpha = 0.3 + Math.sin(this.timer * 0.1) * 0.3;
+            ctx.fillStyle = '#00ff00';
             ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
             ctx.restore();
         }
@@ -961,64 +1132,52 @@ class Game {
         const zoneIdx = this.getZoneIndex();
         
         const scale = CONFIG.WIDTH / 2880;
-        const bg0Height = 1440 * scale;  // bg_0 높이
-        const bgHeight = 6240 * scale;   // bg_1~5 높이
-        const transHeight = 960 * scale; // 전환 이미지 높이
+        const bg0Height = 1440 * scale;
+        const bgHeight = 6240 * scale;
+        const transHeight = 960 * scale;
         
-        // bg_0의 월드 좌표 (맨 바닥)
-        const bg0WorldY = CONFIG.HEIGHT - 120;
+        const bg0WorldY = CONFIG.HEIGHT - 80;
         
-        // === 1. 각 구간의 반복 배경 그리기 (bg_1~5) ===
         for(let z = 1; z <= 5; z++) {
-            const zoneStart = ZONES[z - 1].start * 10; // 구간 시작 높이 (픽셀)
-            const zoneEnd = ZONES[z - 1].end * 10;     // 구간 끝 높이
+            const zoneStart = ZONES[z - 1].start * 10;
+            const zoneEnd = ZONES[z - 1].end * 10;
             
-            // 구간 시작점 월드 좌표
             const zoneSplitY = bg0WorldY - zoneStart;
             
             const bg = this.loader.get(`bg_${z}`);
             if(!bg) continue;
             
-            // 전환 이미지가 있으면 그 위부터 시작
             const startY = z > 1 ? (zoneSplitY - transHeight) : zoneSplitY;
             
-            // 현재 카메라 위치 기준으로 타일링
             let currY = startY - bgHeight;
             
-            // 위쪽으로 무한 반복
             while(currY - this.cameraY > -bgHeight - CONFIG.HEIGHT) {
                 const screenY = currY - this.cameraY;
                 
-                // 화면에 보이는 것만 그리기
                 if(screenY < CONFIG.HEIGHT) {
                     ctx.drawImage(bg, 0, screenY, CONFIG.WIDTH, bgHeight);
                 }
                 
                 currY -= bgHeight;
                 
-                // 너무 많이 그리는 것 방지
                 if(currY < this.cameraY - CONFIG.HEIGHT * 3) break;
             }
         }
         
-        // === 2. bg_0 그리기 (맨 바닥에 한 번만) ===
         const bg0 = this.loader.get('bg_0');
         if(bg0) {
             const bg0ScreenY = (bg0WorldY - bg0Height) - this.cameraY;
             
-            // 화면에 보일 때만
             if(bg0ScreenY > -bg0Height && bg0ScreenY < CONFIG.HEIGHT) {
                 ctx.drawImage(bg0, 0, bg0ScreenY, CONFIG.WIDTH, bg0Height);
             }
         }
         
-        // === 3. 구간 전환 이미지 그리기 (각 구간 경계에 한 번씩) ===
         for(let z = 1; z < ZONES.length; z++) {
             const splitPoint = ZONES[z].start * 10;
             const splitY = bg0WorldY - splitPoint;
             const transScreenY = (splitY - transHeight) - this.cameraY;
             
-            // 화면에 보일 때만
             if(transScreenY > -transHeight && transScreenY < CONFIG.HEIGHT) {
                 const transImg = this.loader.get(`bg_${z}to${z + 1}`);
                 if(transImg) {
@@ -1040,7 +1199,6 @@ class Game {
             ctx.rotate(p.rotation * Math.PI / 180);
         }
 
-        // 플레이어 이미지
         let playerImg = null;
         if(p.onHold) {
             playerImg = p.facingLeft ? this.loader.get('player_left') : this.loader.get('player_right');
@@ -1051,12 +1209,10 @@ class Game {
         if(playerImg) {
             ctx.drawImage(playerImg, -25, -25, 50, 50);
         } else {
-            // Fallback
             ctx.fillStyle = '#fff';
             ctx.fillRect(-25, -25, 50, 50);
         }
 
-        // 화살표 (홀드에 매달렸을 때만)
         if(p.onHold) {
             const arrowImg = this.loader.get('arrow');
             ctx.rotate(p.arrowAngle * Math.PI / 180);
@@ -1064,7 +1220,6 @@ class Game {
             if(arrowImg) {
                 ctx.drawImage(arrowImg, -10, -70, 20, 40);
             } else {
-                // Fallback
                 ctx.fillStyle = 'red';
                 ctx.beginPath();
                 ctx.moveTo(-5, -40);
@@ -1090,9 +1245,113 @@ class Game {
 
     loop() {
         if(this.state !== 'PLAYING') return;
+        
+        // FPS 계산
+        const now = Date.now();
+        const delta = now - this.lastFrameTime;
+        this.fps = Math.round(1000 / delta);
+        this.lastFrameTime = now;
+        
         this.update();
         this.draw();
         requestAnimationFrame(() => this.loop());
+    }
+    
+    // ===== 개발자 모드 함수들 =====
+    
+    updateConfig(key, value) {
+        CONFIG[key] = parseFloat(value);
+        const display = document.getElementById(`val-${key}`);
+        if(display) {
+            display.innerText = value;
+        }
+    }
+    
+    toggleDevPanel() {
+        this.devPanelMinimized = !this.devPanelMinimized;
+        const panel = document.getElementById('dev-panel');
+        const btn = document.querySelector('#dev-panel .toggle-btn');
+        
+        if(this.devPanelMinimized) {
+            panel.classList.add('minimized');
+            if(btn) btn.innerText = '◀';
+        } else {
+            panel.classList.remove('minimized');
+            if(btn) btn.innerText = '▶';
+        }
+    }
+    
+    devTeleport(distance) {
+        if(this.state !== 'PLAYING') {
+            alert('게임 중에만 사용 가능합니다.');
+            return;
+        }
+        
+        const targetY = CONFIG.HEIGHT - 120 - (distance * 10);
+        this.player.y = targetY;
+        this.cameraY = targetY - CONFIG.HEIGHT * 0.6;
+        this.distance = distance;
+        
+        // 새로운 홀드 생성
+        this.holds = [];
+        this.holds.push({
+            x: this.player.x,
+            y: this.player.y,
+            type: 'normal',
+            active: true,
+            timer: 0,
+            originX: this.player.x,
+            originY: this.player.y
+        });
+        this.player.onHold = this.holds[0];
+        this.player.vx = 0;
+        this.player.vy = 0;
+        
+        for(let i = 0; i < 10; i++) this.spawnHold();
+        
+        alert(`${distance}m로 이동했습니다!`);
+    }
+    
+    devGodMode() {
+        this.godMode = !this.godMode;
+        alert(this.godMode ? '무적 모드 활성화!' : '무적 모드 비활성화');
+    }
+    
+    devClearProgress() {
+        if(confirm('정말로 진행도를 초기화하시겠습니까?')) {
+            this.user.best = 0;
+            this.save();
+            alert('진행도가 초기화되었습니다.');
+        }
+    }
+    
+    devReset() {
+        if(confirm('모든 설정을 기본값으로 되돌리시겠습니까?')) {
+            Object.assign(CONFIG, DEFAULT_CONFIG);
+            
+            // 슬라이더 값 업데이트
+            for(let key in DEFAULT_CONFIG) {
+                const slider = document.querySelector(`input[oninput*="${key}"]`);
+                if(slider) {
+                    slider.value = DEFAULT_CONFIG[key];
+                    const display = document.getElementById(`val-${key}`);
+                    if(display) display.innerText = DEFAULT_CONFIG[key];
+                }
+            }
+            
+            alert('설정이 초기화되었습니다.');
+        }
+    }
+    
+    updateDevInfo() {
+        document.getElementById('debug-distance').innerText = this.distance;
+        document.getElementById('debug-holds').innerText = this.holds.length;
+        document.getElementById('debug-obstacles').innerText = 
+            this.rocks.length + this.lavas.length + this.goblins.length;
+        document.getElementById('debug-fps').innerText = this.fps;
+        document.getElementById('debug-camera').innerText = Math.round(this.cameraY);
+        document.getElementById('debug-godmode').innerText = this.godMode ? 'ON' : 'OFF';
+        document.getElementById('debug-godmode').style.color = this.godMode ? '#0f0' : '#fff';
     }
 }
 
